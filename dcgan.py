@@ -45,7 +45,7 @@ class Discriminator(nn.Module):
         super(Discriminator, self).__init__()
         self.main = nn.Sequential(
             # Input is (nc) x 64 x 64
-            nn.Conv2d(nc, feature_num, 4, 2, 1, bias=False),
+            nn.Conv2d(nc, feature_num, 4, 2, 3, bias=False),
             nn.LeakyReLU(0.2, inplace=True),
             # State size. (ndf) x 32 x 32
             nn.Conv2d(feature_num, feature_num * 2, 4, 2, 1, bias=False),
