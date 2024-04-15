@@ -1,40 +1,51 @@
-"""Training procedure for NICE.
+"""Training procedure for gan.
 """
 
 import matplotlib.pyplot as plt
 import argparse
+import torch.utils
+import torch.utils.data
 import torch, torchvision
 from torchvision import transforms
+from torch.utils.data import DataLoader
+from torch.optim import Adam
 from dcgan import DCGAN
 
-beta1 = 0.5  # Beta1 hyperparam for Adam optimizers
+BETA1 = 0.5  # Beta1 hyperparam for Adam optimizers
 
 
-def train(dcgan: DCGAN, trainloader, optimizerD, optimizerG):
+def train(
+    dcgan: DCGAN,
+    trainloader: DataLoader,
+    optimizer_d: Adam,
+    optimizer_g: Adam,
+):
     dcgan.train()  # set to training mode
-    total_lossD = 0
-    total_lossG = 0
+    total_loss_d = 0
+    total_loss_g = 0
     batch_idx = 0
     for batch, _ in trainloader:
         data = batch.to(dcgan.device)
 
-        optimizerD.zero_grad()
+        optimizer_d.zero_grad()
         # discriminator train
-        real_label = dcgan.label_real(data).mean()
-        fake_label = dcgan.label_fake(batch_size=batch.size).mean()
-        lossD = dcgan.calculate_dicriminator_loss(real_label, fake_label, batch.size)
-        lossD.backward()
-        total_lossD += lossD.item()
-        optimizerD.step()
+        real_label = dcgan.label_real(data)
+        fake_label = dcgan.label_fake(batch_size=batch.size)
+        loss_d = dcgan.calculate_dicriminator_loss(real_label, fake_label, batch.size)
+        loss_d.backward()
+        total_loss_d += loss_d.item()
+        optimizer_d.step()
 
         # generator train
-        optimizerG.zero_grad()
+        optimizer_g.zero_grad()
         results = dcgan.label_fake(batch_size=batch.size)
         lossG = dcgan.calculate_generator_loss(results, batch_size=batch.size)
-        total_lossG += lossG.item()
+        lossG.backward()
+        total_loss_g += lossG.item()
+        optimizer_g.step()
 
         batch_idx += 1
-    return total_lossD / batch_idx, total_lossG / batch_idx
+    return total_loss_d / batch_idx, total_loss_g / batch_idx
 
 
 def test(vae, testloader, filename, epoch):
@@ -113,17 +124,17 @@ def main(args):
     )
 
     dcgan = DCGAN(latent_dim=args.latent_dim, device=device)
-    optimizerD = torch.optim.Adam(
+    optimizer_d = torch.optim.Adam(
         dcgan.discriminator.parameters(), lr=args.lr, betas=(0.5, 0.999)
     )
-    optimizerG = torch.optim.Adam(
+    optimizer_g = torch.optim.Adam(
         dcgan.generator.parameters(), lr=args.lr, betas=(0.5, 0.999)
     )
     loss_train_arr = []
     loss_test_arr = []
     for epoch in range(1, args.epochs + 1):
         loss_train = train(
-            dcgan, trainloader, optimizerD=optimizerD, optimizerG=optimizerG
+            dcgan, trainloader, optimizer_d=optimizer_d, optimizer_g=optimizer_g
         )
         loss_train_arr.append(loss_train)
         loss_test = test(dcgan, testloader, filename, epoch)

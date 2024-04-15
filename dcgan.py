@@ -78,6 +78,10 @@ class DCGAN:
         self.latent_dim = latent_dim
         self.loss = nn.BCELoss()
 
+    def train(self):
+        self.generator.train()
+        self.discriminator.train()
+
     def label(self, x):
         return self.discriminator(x)
 
