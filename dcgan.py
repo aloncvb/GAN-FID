@@ -72,8 +72,8 @@ class Discriminator(nn.Module):
 class DCGAN:
     def __init__(self, latent_dim, device):
         super(DCGAN, self).__init__()
-        self.generator = Generator(latent_dim)
-        self.discriminator = Discriminator()
+        self.generator = Generator(latent_dim).to(device)
+        self.discriminator = Discriminator().to(device)
         self.device = device
         self.latent_dim = latent_dim
         self.loss = nn.BCELoss()

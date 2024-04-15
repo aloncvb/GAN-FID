@@ -26,7 +26,7 @@ def train(
     batch_idx = 0
     for batch, _ in trainloader:
         data = batch.to(dcgan.device)
-
+        print(f"device: {dcgan.device}")
         optimizer_d.zero_grad()
         # discriminator train
         real_label = dcgan.label_real(data)
