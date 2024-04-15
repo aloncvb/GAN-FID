@@ -7,7 +7,7 @@ import torch.nn as nn
 
 image_size = 64
 nc = 1  # Number of channels in the training images. For color images this is 3
-feature_num = 64  # Size of feature maps in generator/discriminator
+feature_num = 128  # Size of feature maps in generator/discriminator
 
 
 class Generator(nn.Module):
@@ -72,8 +72,8 @@ class Discriminator(nn.Module):
 class DCGAN:
     def __init__(self, latent_dim, device):
         super(DCGAN, self).__init__()
-        self.generator = Generator(latent_dim).to(device)
-        self.discriminator = Discriminator().to(device)
+        self.generator = Generator(latent_dim)
+        self.discriminator = Discriminator()
         self.device = device
         self.latent_dim = latent_dim
         self.loss = nn.BCELoss()
