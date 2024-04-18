@@ -94,7 +94,7 @@ def main(args):
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     transform = transforms.Compose(
         [
-            transforms.Resize(64),
+            transforms.Resize(64),  # resize the image to 64x64. TODO: maybe delete?
             transforms.ToTensor(),
             transforms.Lambda(
                 lambda x: x + torch.zeros_like(x).uniform_(0.0, 1.0 / 256.0)
