@@ -31,36 +31,29 @@ def train(
         # discriminator train
         real_label = dcgan.label_real(data)
         fake_label = dcgan.label_fake(batch_size=batch_size)
-        print("label success")
         loss_d = dcgan.calculate_dicriminator_loss(
             real_label, fake_label, batch_size=batch_size
         )
-        print("calc loss d success")
         loss_d.backward()
-        print("loss d backwards")
         total_loss_d += loss_d.item()
-        print("total loss d backwards")
         optimizer_d.step()
-        print("optimizer d step success")
 
         # generator train
         optimizer_g.zero_grad()
         results = dcgan.label_fake(batch_size=batch_size)
         lossG = dcgan.calculate_generator_loss(results, batch_size=batch_size)
-        print("calc loss g success")
         lossG.backward()
         total_loss_g += lossG.item()
-        print("total loss g success")
         optimizer_g.step()
 
         batch_idx += 1
     return total_loss_d / batch_idx, total_loss_g / batch_idx
 
 
-def test(vae, testloader, filename, epoch):
-    vae.eval()  # set to inference mode
+def test(dcgan, testloader, filename, epoch):
+    dcgan.eval()  # set to inference mode
     with torch.no_grad():
-        samples = vae.sample(100).to(vae.device)
+        samples = dcgan.generate_fake(100)
         a, b = samples.min(), samples.max()
         samples = (samples - a) / (b - a + 1e-10)
         torchvision.utils.save_image(
@@ -71,9 +64,9 @@ def test(vae, testloader, filename, epoch):
         total_loss = 0
         batch_idx = 0
         for batch, _ in testloader:
-            data = batch.to(vae.device)
+            data = batch.to(dcgan.device)
 
-            loss = vae(data)
+            loss = dcgan(data)
             total_loss += loss.item()
             batch_idx += 1
         print(

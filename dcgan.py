@@ -79,6 +79,10 @@ class DCGAN:
         self.generator.train()
         self.discriminator.train()
 
+    def eval(self):
+        self.generator.eval()
+        self.discriminator.eval()
+
     def label(self, x):
         return self.discriminator(x).squeeze()
 
