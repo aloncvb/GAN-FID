@@ -32,7 +32,9 @@ def train(
         real_label = dcgan.label_real(data)
         fake_label = dcgan.label_fake(batch_size=batch_size)
         print("label success")
-        loss_d = dcgan.calculate_dicriminator_loss(real_label, fake_label, batch.size)
+        loss_d = dcgan.calculate_dicriminator_loss(
+            real_label, fake_label, batch_size=batch_size
+        )
         print("calc loss d success")
         loss_d.backward()
         print("loss d backwards")
