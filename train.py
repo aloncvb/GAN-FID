@@ -27,10 +27,10 @@ def train(
     for batch, _ in trainloader:
         data = batch.to(dcgan.device)
         optimizer_d.zero_grad()
-        print(batch.size())
+        batch_size = data.size()[0]
         # discriminator train
         real_label = dcgan.label_real(data)
-        fake_label = dcgan.label_fake(batch_size=batch.size()[0])
+        fake_label = dcgan.label_fake(batch_size=batch_size)
         print("label success")
         loss_d = dcgan.calculate_dicriminator_loss(real_label, fake_label, batch.size)
         print("calc loss d success")
@@ -43,8 +43,8 @@ def train(
 
         # generator train
         optimizer_g.zero_grad()
-        results = dcgan.label_fake(batch_size=batch.size)
-        lossG = dcgan.calculate_generator_loss(results, batch_size=batch.size)
+        results = dcgan.label_fake(batch_size=batch_size)
+        lossG = dcgan.calculate_generator_loss(results, batch_size=batch_size)
         print("calc loss g success")
         lossG.backward()
         total_loss_g += lossG.item()
