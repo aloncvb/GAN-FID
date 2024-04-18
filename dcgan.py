@@ -15,7 +15,7 @@ class Generator(nn.Module):
         super(Generator, self).__init__()
         self.main = nn.Sequential(
             # Input is Z, going into a convolution
-            nn.ConvTranspose2d(latent_dim, feature_num * 8, 4, 1, 3, bias=False),
+            nn.ConvTranspose2d(latent_dim, feature_num * 8, 4, 1, 0, bias=False),
             nn.BatchNorm2d(feature_num * 8),
             nn.ReLU(True),
             # State size. (ngf*8) x 4 x 4
@@ -44,25 +44,20 @@ class Discriminator(nn.Module):
     def __init__(self):
         super(Discriminator, self).__init__()
         self.main = nn.Sequential(
-            # Input is (nc) x 64 x 64
-            nn.Conv2d(nc, feature_num, 4, 2, 3, bias=False),
+            # Input is (nc) x 128
+            nn.Conv2d(nc, feature_num, 4, 2, 1, bias=False),
             nn.LeakyReLU(0.2, inplace=True),
-            # State size. (ndf) x 32 x 32
-            nn.Conv2d(feature_num, feature_num * 2, 4, 2, 3, bias=False),
+            nn.Conv2d(feature_num, feature_num * 2, 4, 2, 1, bias=False),
             nn.BatchNorm2d(feature_num * 2),
             nn.LeakyReLU(0.2, inplace=True),
-            # State size. (ndf*2) x 16 x 16
-            nn.Conv2d(feature_num * 2, feature_num * 4, 4, 2, 3, bias=False),
+            nn.Conv2d(feature_num * 2, feature_num * 4, 4, 2, 1, bias=False),
             nn.BatchNorm2d(feature_num * 4),
             nn.LeakyReLU(0.2, inplace=True),
-            # State size. (ndf*4) x 8 x 8
-            nn.Conv2d(feature_num * 4, feature_num * 8, 4, 2, 3, bias=False),
+            nn.Conv2d(feature_num * 4, feature_num * 8, 4, 2, 1, bias=False),
             nn.BatchNorm2d(feature_num * 8),
             nn.LeakyReLU(0.2, inplace=True),
-            # State size. (ndf*8) x 4 x 4
-            nn.Conv2d(feature_num * 8, 1, 4, 1, 3, bias=False),
+            nn.Conv2d(feature_num * 8, 1, 4, 1, 0, bias=False),
             nn.Sigmoid(),
-            # Output size. 1
         )
 
     def forward(self, input):
