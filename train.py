@@ -54,8 +54,9 @@ def test(dcgan, testloader, filename, epoch):
     dcgan.eval()  # set to inference mode
     with torch.no_grad():
         samples = dcgan.generate_fake(100)
-        a, b = samples.min(), samples.max()
-        samples = (samples - a) / (b - a + 1e-10)
+        # a, b = samples.min(), samples.max()
+        # samples = (samples - a) / (b - a + 1e-10)
+        # samples = samples.clamp(0, 1)
         torchvision.utils.save_image(
             torchvision.utils.make_grid(samples),
             "./samples/" + filename + "epoch%d.png" % epoch,
