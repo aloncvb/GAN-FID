@@ -80,7 +80,7 @@ class DCGAN:
         self.discriminator.train()
 
     def label(self, x):
-        return self.discriminator(x)
+        return self.discriminator(x).squeeze()
 
     def generate_latent(self, batch_size):
         return torch.randn(batch_size, self.latent_dim, 1, 1, device=self.device)
