@@ -27,7 +27,7 @@ def train(
     for batch, _ in trainloader:
         data = batch.to(dcgan.device)
         optimizer_d.zero_grad()
-        print(batch)
+        print(batch.size())
         # discriminator train
         real_label = dcgan.label_real(data)
         fake_label = dcgan.label_fake(batch_size=batch.size()[0])

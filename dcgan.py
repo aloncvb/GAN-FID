@@ -83,7 +83,7 @@ class DCGAN:
         return self.discriminator(x)
 
     def generate_latent(self, batch_size):
-        return torch.randn(batch_size, self.latent_dim, 1, 1)
+        return torch.randn(batch_size, self.latent_dim, 1, 1).to(self.device)
 
     def generate_fake(self, batch_size):
         return self.generator(self.generate_latent(batch_size))
