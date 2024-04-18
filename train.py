@@ -50,7 +50,7 @@ def train(
     return total_loss_d / batch_idx, total_loss_g / batch_idx
 
 
-def test(dcgan, testloader, filename, epoch):
+def test(dcgan: DCGAN, testloader: DataLoader, filename: str, epoch: int):
     dcgan.eval()  # set to inference mode
     with torch.no_grad():
         samples = dcgan.generate_fake(100)
@@ -182,7 +182,7 @@ if __name__ == "__main__":
         "--batch_size", help="number of images in a mini-batch.", type=int, default=128
     )
     parser.add_argument(
-        "--epochs", help="maximum number of iterations.", type=int, default=50
+        "--epochs", help="maximum number of iterations.", type=int, default=20
     )
     parser.add_argument(
         "--sample_size", help="number of images to generate.", type=int, default=64
