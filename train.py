@@ -61,20 +61,33 @@ def test(dcgan, testloader, filename, epoch):
             "./samples/" + filename + "epoch%d.png" % epoch,
         )
 
-        total_loss = 0
+        total_loss_g = 0
+        total_loss_d = 0
         batch_idx = 0
         for batch, _ in testloader:
             data = batch.to(dcgan.device)
-
-            loss = dcgan(data)
-            total_loss += loss.item()
+            batch_size = data.size()[0]
+            real_label = dcgan.label_real(data)
+            fake_label = dcgan.label_fake(batch_size=batch_size)
+            loss_d = dcgan.calculate_dicriminator_loss(
+                real_label, fake_label, batch_size=batch_size
+            )
+            total_loss_d += loss_d.item()
+            results = dcgan.label_fake(batch_size=batch_size)
+            loss_g = dcgan.calculate_generator_loss(results, batch_size=batch_size)
+            total_loss_g += loss_g.item()
             batch_idx += 1
         print(
-            "Epoch: {} Test set: Average loss: {:.4f}".format(
-                epoch, total_loss / batch_idx
+            "Epoch: {} Test set: Average loss_d: {:.4f}".format(
+                epoch, total_loss_d / batch_idx
             )
         )
-    return total_loss / batch_idx
+        print(
+            "Epoch: {} Test set: Average loss_g: {:.4f}".format(
+                epoch, total_loss_g / batch_idx
+            )
+        )
+    return total_loss_d / batch_idx, total_loss_g / batch_idx
 
 
 def main(args):
@@ -133,25 +146,30 @@ def main(args):
     optimizer_g = torch.optim.Adam(
         dcgan.generator.parameters(), lr=args.lr, betas=(0.5, 0.999)
     )
-    loss_train_arr = []
-    loss_test_arr = []
+    loss_train_arr_d = []
+    loss_test_arr_d = []
+    loss_train_arr_g = []
+    loss_test_arr_g = []
     for epoch in range(1, args.epochs + 1):
-        loss_train = train(
+        loss_train_d, loss_train_g = train(
             dcgan, trainloader, optimizer_d=optimizer_d, optimizer_g=optimizer_g
         )
-        loss_train_arr.append(loss_train)
-        loss_test = test(dcgan, testloader, filename, epoch)
-        loss_test_arr.append(loss_test)
+        loss_train_arr_d.append(loss_train_d)
+        loss_train_arr_g.append(loss_train_g)
+        loss_test_d, loss_test_g = test(dcgan, testloader, filename, epoch)
+        loss_test_arr_d.append(loss_test_d)
+        loss_test_arr_g.append(loss_test_g)
     # Save the model
     torch.save(dcgan.generator.state_dict(), "generator.pt")
     torch.save(dcgan.discriminator.state_dict(), "discriminator.pt")
     # create a plot of the loss
-    plt.plot(loss_train_arr, label="train")
-    plt.plot(loss_test_arr, label="test")
+    plt.plot(loss_train_arr_d, label="train_d")
+    plt.plot(loss_test_arr_d, label="test_d")
+    plt.plot(loss_train_arr_g, label="train_g")
+    plt.plot(loss_test_arr_g, label="test_g")
     plt.xlabel("Epoch")
-    plt.ylabel("ELBO")
+    plt.ylabel("dcgan loss")
     plt.legend()
-    plt.savefig("elbo.png")
 
 
 if __name__ == "__main__":
