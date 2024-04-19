@@ -100,7 +100,7 @@ def main(args):
             transforms.Lambda(
                 lambda x: x + torch.zeros_like(x).uniform_(0.0, 1.0 / 256.0)
             ),  # dequantization
-            transforms.Normalize(mean=(0.5, 0.5, 0.5), std=(0.5, 0.5, 0.5)),
+            transforms.Normalize((0.0,), (257.0 / 256.0,)),  # rescales to [0,1]
         ]
     )
 
