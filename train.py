@@ -171,6 +171,7 @@ def main(args):
     plt.xlabel("Epoch")
     plt.ylabel("dcgan loss")
     plt.legend()
+    plt.savefig("loss.png")
 
 
 if __name__ == "__main__":
