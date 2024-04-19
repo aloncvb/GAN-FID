@@ -73,7 +73,7 @@ class DCGAN:
         self.discriminator.to(device)
         self.device = device
         self.latent_dim = latent_dim
-        self.loss = nn.MSELoss()  # change to mse loss
+        self.loss = nn.MSELoss()  # change to mse loss for bce loss
 
     def train(self):
         self.generator.train()
