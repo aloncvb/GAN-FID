@@ -11,6 +11,8 @@ from torch.utils.data import DataLoader
 from torch.optim import Adam
 from dcgan import DCGAN
 
+gradient_clip = 5.0
+
 
 def train(
     dcgan: DCGAN,
@@ -33,6 +35,8 @@ def train(
             real_label, fake_label, batch_size=batch_size
         )
         loss_d.backward()
+        for param in dcgan.discriminator.parameters():
+            param.grad.data.clamp_(-gradient_clip, gradient_clip)
         total_loss_d += loss_d.item()
         optimizer_d.step()
 
