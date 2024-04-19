@@ -95,10 +95,7 @@ def main(args):
         [
             transforms.Resize(64),  # resize the image to 64x64. TODO: maybe delete?
             transforms.ToTensor(),
-            transforms.Lambda(
-                lambda x: x + torch.zeros_like(x).uniform_(0.0, 1.0 / 256.0)
-            ),  # dequantization
-            transforms.Normalize((0.0,), (257.0 / 256.0,)),  # rescales to [0,1]
+            transforms.Normalize((0.5,), (0.5,)),
         ]
     )
 
