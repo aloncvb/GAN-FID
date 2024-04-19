@@ -57,6 +57,7 @@ class Discriminator(nn.Module):
             nn.BatchNorm2d(feature_num * 8),
             nn.LeakyReLU(0.2, inplace=True),
             nn.Conv2d(feature_num * 8, 1, 4, 1, 0),
+            nn.Sigmoid(),
         )
 
     def forward(self, input):
@@ -72,7 +73,7 @@ class DCGAN:
         self.discriminator.to(device)
         self.device = device
         self.latent_dim = latent_dim
-        self.loss = nn.MSELoss()  # change to mse loss for bce loss
+        self.loss = nn.BCELoss()  # change to mse loss for bce loss
 
     def train(self):
         self.generator.train()
