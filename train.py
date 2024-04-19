@@ -11,8 +11,6 @@ from torch.utils.data import DataLoader
 from torch.optim import Adam
 from dcgan import DCGAN
 
-BETA1 = 0.5  # Beta1 hyperparam for Adam optimizers
-
 
 def train(
     dcgan: DCGAN,
