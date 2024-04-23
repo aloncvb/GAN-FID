@@ -7,6 +7,8 @@ from pytorch_fid.fid_score import calculate_fid_given_paths
 from scipy.stats import entropy
 from torchvision import transforms, datasets
 import os
+from PIL import Image
+
 
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 paths = ["mnist_images", "generated_mnist_images"]
@@ -79,7 +81,9 @@ if __name__ == "__main__":
         for f in os.listdir(directory)
         if os.path.isfile(os.path.join(directory, f))
     ]
-    images = [transform(img) for img in images]
+    # str to pil image:
+
+    images = [transform(Image.open(img)) for img in images]
     is_score = inception_score(images, batch_size=128, resize=True)
 
     print(f"Inception Score: {is_score}")
