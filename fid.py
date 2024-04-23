@@ -46,7 +46,7 @@ def inception_score(imgs, batch_size=128, resize=False, splits=1):
     for i, batch in enumerate(dataloader, 0):
         batchv = torch.autograd.Variable(batch)
         batch_size_i = batch.size()[0]
-
+        print(batch.size())
         preds[i * batch_size : i * batch_size + batch_size_i] = get_pred(batchv)
 
     # Now compute the mean kl-div
