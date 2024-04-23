@@ -24,7 +24,7 @@ def inception_score(imgs, batch_size=128, resize=False, splits=1):
     assert N > batch_size
 
     # Set up dataloader
-    dataloader = torch.utils.data.DataLoader(imgs, batch_size=batch_size)
+    dataloader = DataLoader(imgs, batch_size=batch_size)
 
     # Load inception model
     print("Loading Inception model")
@@ -127,7 +127,8 @@ if __name__ == "__main__":
 
     # Create a DataLoader
     dataloader = DataLoader(dataset, batch_size=128)
-    is_score = get_inception_score(dataloader)
+    print("Calculating Inception Score")
+    is_score = get_inception_score(dataloader, use_torch=True)
 
     print(f"Inception Score: {is_score}")
 
