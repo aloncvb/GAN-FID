@@ -8,7 +8,7 @@ class FastFID(nn.Module):
     def __init__(self, device):
         super(FastFID, self).__init__()
         self.inception = inception_v3(weights=Inception_V3_Weights.IMAGENET1K_V1)
-        self.inception.fc = nn.Identity()
+        self.inception.fc = nn.Identity().to(device)
         self.inception.to(device)
         self.inception.eval()
 
