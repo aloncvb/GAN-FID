@@ -67,6 +67,13 @@ if __name__ == "__main__":
         ]
     )
 
+    print("Calculating FID Score")
+    fid_value = calculate_fid_given_paths(
+        paths, batch_size=128, device=device, dims=2048
+    )
+
+    print(f"FID Score: {fid_value}")
+
     # Create a dataset from the image directory
     # dataset = datasets.ImageFolder(root="./generated_mnist_images", transform=transform)
     directory = "./generated_mnist_images"
@@ -78,12 +85,7 @@ if __name__ == "__main__":
     # str to pil image:
 
     images = [transform(Image.open(img)) for img in images]
+
     is_score = inception_score(images, batch_size=128, resize=True)
 
     print(f"Inception Score: {is_score}")
-
-    print("Calculating FID Score")
-    fid_value = calculate_fid_given_paths(
-        paths, batch_size=128, device=device, dims=2048
-    )
-    print(f"FID Score: {fid_value}")
