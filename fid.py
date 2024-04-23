@@ -4,8 +4,8 @@ from torch.nn.functional import softmax
 from torchvision.models import inception_v3, Inception_V3_Weights
 import numpy as np
 from pytorch_fid.fid_score import calculate_fid_given_paths
-from pytorch_gan_metrics import get_inception_score, get_fid
-
+from pytorch_gan_metrics import get_inception_score
+from torch.utils.data import Dataset, DataLoader
 from scipy.stats import entropy
 from torchvision import transforms
 import os
@@ -79,6 +79,32 @@ def inception_score(imgs, batch_size=128, resize=False, splits=1):
         raise e
 
 
+class ImageDataset(Dataset):
+    def __init__(self, directory, transform=None):
+        """
+        Args:
+            directory (string): Path to the image directory.
+            transform (callable, optional): Optional transform to be applied on a sample.
+        """
+        self.directory = directory
+        self.transform = transform
+        self.image_filenames = [
+            f
+            for f in os.listdir(directory)
+            if os.path.isfile(os.path.join(directory, f))
+        ]
+
+    def __len__(self):
+        return len(self.image_filenames)
+
+    def __getitem__(self, idx):
+        img_path = os.path.join(self.directory, self.image_filenames[idx])
+        image = Image.open(img_path).convert("RGB")  # Convert to RGB
+        if self.transform:
+            image = self.transform(image)
+        return image
+
+
 if __name__ == "__main__":
     # Calculate FID Score
 
@@ -97,7 +123,10 @@ if __name__ == "__main__":
     # str to pil image:
 
     images = [transform(Image.open(img)) for img in images]
-    dataloader = torch.utils.data.DataLoader(images, batch_size=128)
+    dataset = ImageDataset(directory="./generated_mnist_images", transform=transform)
+
+    # Create a DataLoader
+    dataloader = DataLoader(dataset, batch_size=128)
     is_score = get_inception_score(dataloader)
 
     print(f"Inception Score: {is_score}")
