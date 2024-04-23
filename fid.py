@@ -43,7 +43,8 @@ def inception_score(imgs, batch_size=128, resize=False, splits=1):
     preds = np.zeros((N, 1000))
 
     print("Calculating predictions")
-    for i, (batch, _) in enumerate(dataloader):
+    for i, data_batch in enumerate(dataloader):
+        batch, _ = data_batch
         batch = batch.to(device)
         batch_size_i = batch.size()[0]
         preds[i * batch_size : i * batch_size + batch_size_i] = get_pred(batch)
