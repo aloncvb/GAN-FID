@@ -64,7 +64,6 @@ def inception_score(imgs, batch_size=128, resize=False, splits=1):
 
 if __name__ == "__main__":
     # Calculate FID Score
-    imgs = torch.load("generated_mnist_images")
 
     transform = transforms.Compose(
         [
