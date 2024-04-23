@@ -10,7 +10,7 @@ device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 def save_generated_images(generator, latent_dim, num_images, folder_path):
     # Check if folder exists, if not, create it
     if not os.path.exists(folder_path):
-        os.makedirs(folder_path)
+        os.makedirs(folder_path, mode=0o777)
 
     # Generate images
     with torch.no_grad():
@@ -34,7 +34,7 @@ def save_generated_images(generator, latent_dim, num_images, folder_path):
 
 
 latent_dim = 100
-num_images = 10000
+num_images = 1000
 folder_path = "generated_mnist_images"  # Specify the path
 
 generator = Generator(latent_dim).to(device)

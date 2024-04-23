@@ -6,7 +6,7 @@ from PIL import Image
 def save_mnist_images(directory):
     # Create the directory if it doesn't exist
     if not os.path.exists(directory):
-        os.makedirs(directory)
+        os.makedirs(directory, mode=0o777)
 
     # Load MNIST dataset
     mnist = datasets.MNIST(
