@@ -12,10 +12,6 @@ import os
 from PIL import Image
 
 
-device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-paths = ["mnist_images", "generated_mnist_images"]
-
-
 def inception_score(imgs, batch_size=128, splits=1):
     """Computes the inception score of the generated images."""
     N = len(imgs)
@@ -106,31 +102,34 @@ class ImageDataset(Dataset):
 
 
 if __name__ == "__main__":
+
+    device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+    paths = ["mnist_images", "generated_mnist_images"]
+
     # Calculate FID Score
+    # transform = transforms.Compose(
+    #     [
+    #         transforms.ToTensor(),  # Convert image to tensor
+    #     ]
+    # )
+    # # Create a dataset from the image directory
+    # directory = "./generated_mnist_images"
+    # images = [
+    #     os.path.join(directory, f)
+    #     for f in os.listdir(directory)
+    #     if os.path.isfile(os.path.join(directory, f))
+    # ]
+    # # str to pil image:
 
-    transform = transforms.Compose(
-        [
-            transforms.ToTensor(),  # Convert image to tensor
-        ]
-    )
-    # Create a dataset from the image directory
-    directory = "./generated_mnist_images"
-    images = [
-        os.path.join(directory, f)
-        for f in os.listdir(directory)
-        if os.path.isfile(os.path.join(directory, f))
-    ]
-    # str to pil image:
+    # images = [transform(Image.open(img)) for img in images]
+    # dataset = ImageDataset(directory="./generated_mnist_images", transform=transform)
 
-    images = [transform(Image.open(img)) for img in images]
-    dataset = ImageDataset(directory="./generated_mnist_images", transform=transform)
+    # # Create a DataLoader
+    # dataloader = DataLoader(dataset, batch_size=128)
+    # print("Calculating Inception Score")
+    # is_score = get_inception_score(dataloader, use_torch=True)
 
-    # Create a DataLoader
-    dataloader = DataLoader(dataset, batch_size=128)
-    print("Calculating Inception Score")
-    is_score = get_inception_score(dataloader, use_torch=True)
-
-    print(f"Inception Score: {is_score}")
+    # print(f"Inception Score: {is_score}")
 
     # fid score
     print("Calculating FID Score")
