@@ -28,9 +28,7 @@ def inception_score(imgs, batch_size=128, resize=False, splits=1):
 
     # Load inception model
     print("Loading Inception model")
-    inception_model = inception_v3(weights=Inception_V3_Weights.IMAGENET1K_V1).to(
-        device
-    )
+    inception_model = inception_v3(weights=Inception_V3_Weights.IMAGENET1K_V1)
     print("Inception model loaded")
     inception_model.eval()
     print("Inception model set to evaluation mode")
