@@ -21,29 +21,23 @@ def inception_score(imgs, batch_size=128, resize=False, splits=1):
     assert batch_size > 0
     assert N > batch_size
 
-    dtype = torch.FloatTensor(device=device)
-
     # Set up dataloader
     dataloader = torch.utils.data.DataLoader(imgs, batch_size=batch_size)
 
     # Load inception model
     print("Loading Inception model")
-    inception_model = inception_v3(pretrained=True, transform_input=False).type(dtype)
+    inception_model = inception_v3(pretrained=True, transform_input=False)
     print("Inception model loaded")
     inception_model.eval()
-    up = torch.nn.Upsample(size=(299, 299), mode="bilinear").type(dtype)
 
     def get_pred(x):
-        if resize:
-            x = up(x)
         x = inception_model(x)
-        return softmax(x, dim=1).data.cpu().numpy()
+        return softmax(x, dim=1).data.numpy()
 
     # Get predictions
     preds = np.zeros((N, 1000))
 
     for i, batch in enumerate(dataloader, 0):
-        batch = batch.type(dtype)
         batchv = torch.autograd.Variable(batch)
         batch_size_i = batch.size()[0]
 
