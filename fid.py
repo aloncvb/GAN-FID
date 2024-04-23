@@ -16,7 +16,7 @@ device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 paths = ["mnist_images", "generated_mnist_images"]
 
 
-def inception_score(imgs, batch_size=128, resize=False, splits=1):
+def inception_score(imgs, batch_size=128, splits=1):
     """Computes the inception score of the generated images."""
     N = len(imgs)
 
@@ -28,7 +28,9 @@ def inception_score(imgs, batch_size=128, resize=False, splits=1):
 
     # Load inception model
     print("Loading Inception model")
-    inception_model = inception_v3(weights=Inception_V3_Weights.IMAGENET1K_V1)
+    inception_model = inception_v3(weights=Inception_V3_Weights.IMAGENET1K_V1).to(
+        device
+    )
     print("Inception model loaded")
     inception_model.eval()
     print("Inception model set to evaluation mode")
