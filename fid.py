@@ -40,6 +40,7 @@ def inception_score(imgs, batch_size=128, resize=False, splits=1):
             x = inception_model(x)
             print("softmax(x, dim=1).data.numpy()")
             return softmax(x, dim=1).data.cpu().numpy()
+
         except Exception as e:
             print(e)
             raise e
@@ -47,27 +48,34 @@ def inception_score(imgs, batch_size=128, resize=False, splits=1):
     print("Getting predictions")
     # Get predictions
     preds = np.zeros((N, 1000))
+    try:
+        print("Calculating predictions")
+        for i, batch in enumerate(dataloader):
+            batch = batch.to(device)
+            batch_size_i = batch.size()[0]
+            preds[i * batch_size : i * batch_size + batch_size_i] = get_pred(batch)
+    except Exception as e:
+        print(e)
+        raise e
 
-    print("Calculating predictions")
-    for i, batch in enumerate(dataloader):
-        batch = batch.to(device)
-        batch_size_i = batch.size()[0]
-        preds[i * batch_size : i * batch_size + batch_size_i] = get_pred(batch)
+    try:
+        # Now compute the mean kl-div
+        split_scores = []
+        print("Calculating inception score")
+        for k in range(splits):
+            part = preds[k * (N // splits) : (k + 1) * (N // splits), :]
+            py = np.mean(part, axis=0)
+            scores = []
+            for i in range(part.shape[0]):
+                pyx = part[i, :]
+                scores.append(entropy(pyx, py))
+            split_scores.append(np.exp(np.mean(scores)))
 
-    # Now compute the mean kl-div
-    split_scores = []
-    print("Calculating inception score")
-    for k in range(splits):
-        part = preds[k * (N // splits) : (k + 1) * (N // splits), :]
-        py = np.mean(part, axis=0)
-        scores = []
-        for i in range(part.shape[0]):
-            pyx = part[i, :]
-            scores.append(entropy(pyx, py))
-        split_scores.append(np.exp(np.mean(scores)))
-
-    print("Inception score calculated")
-    return np.mean(split_scores), np.std(split_scores)
+        print("Inception score calculated")
+        return np.mean(split_scores), np.std(split_scores)
+    except Exception as e:
+        print(e)
+        raise e
 
 
 if __name__ == "__main__":
