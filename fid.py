@@ -27,7 +27,9 @@ def inception_score(imgs, batch_size=128, resize=False, splits=1):
 
     # Load inception model
     print("Loading Inception model")
-    inception_model = inception_v3(weights=Inception_V3_Weights.IMAGENET1K_V1)
+    inception_model = inception_v3(weights=Inception_V3_Weights.IMAGENET1K_V1).to(
+        device
+    )
     print("Inception model loaded")
     inception_model.eval()
     print("Inception model set to evaluation mode")
@@ -48,7 +50,6 @@ def inception_score(imgs, batch_size=128, resize=False, splits=1):
 
     print("Calculating predictions")
     for i, batch in enumerate(dataloader):
-        print(batch)
         batch = batch.to(device)
         batch_size_i = batch.size()[0]
         preds[i * batch_size : i * batch_size + batch_size_i] = get_pred(batch)
