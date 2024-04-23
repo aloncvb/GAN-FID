@@ -12,10 +12,10 @@ class FastFID(nn.Module):
         self.inception.to(device)
         self.inception.eval()
 
-    def forward(self, real_imgs, fake_imgs):
+    def forward(self, real_images, fake_images):
         # Compute features from Inception model
-        real_feats = self.inception(real_imgs)
-        fake_feats = self.inception(fake_imgs)
+        real_feats = self.inception(real_images)
+        fake_feats = self.inception(fake_images)
 
         # Calculate means and covariance matrices
         mu_real, cov_real = self.compute_stats(real_feats)
