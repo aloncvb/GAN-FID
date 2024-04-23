@@ -46,6 +46,3 @@ class FastFID(nn.Module):
         return torch.trace(torch.sqrt(cov_real + cov_fake)) - 2 * torch.trace(
             torch.sqrt(torch.mm(cov_real, cov_fake))
         )
-
-
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
