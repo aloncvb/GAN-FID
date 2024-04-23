@@ -10,6 +10,7 @@ from torchvision import transforms
 from torch.utils.data import DataLoader
 from torch.optim import Adam
 from dcgan import DCGAN
+from fast_fid import FastFID
 
 gradient_clip = 5.0
 
@@ -19,8 +20,10 @@ def train(
     trainloader: DataLoader,
     optimizer_d: Adam,
     optimizer_g: Adam,
+    fast_fid: FastFID,
 ):
     dcgan.train()  # set to training mode
+
     total_loss_d = 0
     total_loss_g = 0
     batch_idx = 0
@@ -42,17 +45,27 @@ def train(
 
         # generator train
         optimizer_g.zero_grad()
-        results = dcgan.label_fake(batch_size=batch_size)
-        lossG = dcgan.calculate_generator_loss(results, batch_size=batch_size)
-        lossG.backward()
-        total_loss_g += lossG.item()
+        fake_images = dcgan.generate_fake(batch_size)
+        results = dcgan.label(fake_images)
+        loss_g = dcgan.calculate_generator_loss(results, batch_size=batch_size)
+
+        # use fid for better training
+        fid_loss = fast_fid(
+            real_images=batch, fake_images=fake_images
+        )  # Differentiable FID loss
+        loss_g += fid_loss
+
+        loss_g.backward()
+        total_loss_g += loss_g.item()
         optimizer_g.step()
 
         batch_idx += 1
     return total_loss_d / batch_idx, total_loss_g / batch_idx
 
 
-def test(dcgan: DCGAN, testloader: DataLoader, filename: str, epoch: int):
+def test(
+    dcgan: DCGAN, testloader: DataLoader, filename: str, epoch: int, fast_fid: FastFID
+):
     dcgan.eval()  # set to inference mode
     with torch.no_grad():
         samples = dcgan.generate_fake(100)
@@ -73,8 +86,16 @@ def test(dcgan: DCGAN, testloader: DataLoader, filename: str, epoch: int):
                 real_label, fake_label, batch_size=batch_size
             )
             total_loss_d += loss_d.item()
-            results = dcgan.label_fake(batch_size=batch_size)
+            fake_images = dcgan.generate_fake(batch_size)
+            results = dcgan.label(fake_images)
             loss_g = dcgan.calculate_generator_loss(results, batch_size=batch_size)
+
+            # use fid for better training
+            fid_loss = fast_fid(
+                real_images=batch, fake_images=fake_images
+            )  # Differentiable FID loss
+            loss_g += fid_loss
+
             total_loss_g += loss_g.item()
             batch_idx += 1
         print(
@@ -137,6 +158,7 @@ def main(args):
     )
 
     dcgan = DCGAN(latent_dim=args.latent_dim, device=device)
+    fast_fid = FastFID(device=device)
     optimizer_d = torch.optim.Adam(
         dcgan.discriminator.parameters(), lr=args.lr, betas=(0.5, 0.999)
     )
@@ -149,11 +171,17 @@ def main(args):
     loss_test_arr_g = []
     for epoch in range(1, args.epochs + 1):
         loss_train_d, loss_train_g = train(
-            dcgan, trainloader, optimizer_d=optimizer_d, optimizer_g=optimizer_g
+            dcgan,
+            trainloader,
+            optimizer_d=optimizer_d,
+            optimizer_g=optimizer_g,
+            fast_fid=fast_fid,
         )
         loss_train_arr_d.append(loss_train_d)
         loss_train_arr_g.append(loss_train_g)
-        loss_test_d, loss_test_g = test(dcgan, testloader, filename, epoch)
+        loss_test_d, loss_test_g = test(
+            dcgan, testloader, filename, epoch, fast_fid=fast_fid
+        )
         loss_test_arr_d.append(loss_test_d)
         loss_test_arr_g.append(loss_test_g)
     # Save the model
