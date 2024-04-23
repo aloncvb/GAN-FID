@@ -5,6 +5,8 @@ from torchvision.models import inception_v3
 import numpy as np
 from pytorch_fid.fid_score import calculate_fid_given_paths
 from scipy.stats import entropy
+from torchvision import transforms, datasets
+import os
 
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 paths = ["mnist_images", "generated_mnist_images"]
@@ -23,7 +25,9 @@ def inception_score(imgs, batch_size=128, resize=False, splits=1):
     dataloader = torch.utils.data.DataLoader(imgs, batch_size=batch_size)
 
     # Load inception model
+    print("Loading Inception model")
     inception_model = inception_v3(pretrained=True, transform_input=False).type(dtype)
+    print("Inception model loaded")
     inception_model.eval()
     up = torch.nn.Upsample(size=(299, 299), mode="bilinear").type(dtype)
 
@@ -60,12 +64,29 @@ def inception_score(imgs, batch_size=128, resize=False, splits=1):
 
 if __name__ == "__main__":
     # Calculate FID Score
+    imgs = torch.load("generated_mnist_images")
+
+    transform = transforms.Compose(
+        [
+            transforms.ToTensor(),  # Convert image to tensor
+        ]
+    )
+
+    # Create a dataset from the image directory
+    # dataset = datasets.ImageFolder(root="./generated_mnist_images", transform=transform)
+    directory = "./generated_mnist_images"
+    images = [
+        os.path.join(directory, f)
+        for f in os.listdir(directory)
+        if os.path.isfile(os.path.join(directory, f))
+    ]
+    images = [transform(img) for img in images]
+    is_score = inception_score(images, batch_size=128, resize=True)
+
+    print(f"Inception Score: {is_score}")
+
     print("Calculating FID Score")
     fid_value = calculate_fid_given_paths(
         paths, batch_size=128, device=device, dims=2048
     )
     print(f"FID Score: {fid_value}")
-
-    is_score = inception_score(paths, batch_size=128, resize=True)
-
-    print(f"Inception Score: {is_score}")
