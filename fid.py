@@ -4,10 +4,9 @@ from torch.nn.functional import softmax
 from torchvision.models import inception_v3, Inception_V3_Weights
 import numpy as np
 from pytorch_fid.fid_score import calculate_fid_given_paths
-from pytorch_fid.inception import InceptionV3
 
 from scipy.stats import entropy
-from torchvision import transforms, datasets
+from torchvision import transforms
 import os
 from PIL import Image
 
@@ -33,14 +32,17 @@ def inception_score(imgs, batch_size=128, resize=False, splits=1):
     )
     print("Inception model loaded")
     inception_model.eval()
+    print("Inception model set to evaluation mode")
 
     def get_pred(x):
         x = inception_model(x)
         return softmax(x, dim=1).data.numpy()
 
+    print("Getting predictions")
     # Get predictions
     preds = np.zeros((N, 1000))
 
+    print("Calculating predictions")
     for i, batch in enumerate(dataloader, 0):
         batchv = torch.autograd.Variable(batch)
         batch_size_i = batch.size()[0]
@@ -49,7 +51,7 @@ def inception_score(imgs, batch_size=128, resize=False, splits=1):
 
     # Now compute the mean kl-div
     split_scores = []
-
+    print("Calculating inception score")
     for k in range(splits):
         part = preds[k * (N // splits) : (k + 1) * (N // splits), :]
         py = np.mean(part, axis=0)
@@ -59,6 +61,7 @@ def inception_score(imgs, batch_size=128, resize=False, splits=1):
             scores.append(entropy(pyx, py))
         split_scores.append(np.exp(np.mean(scores)))
 
+    print("Inception score calculated")
     return np.mean(split_scores), np.std(split_scores)
 
 
