@@ -154,3 +154,5 @@ cython_debug/
 
 # mnist and fashion mnist data
 data/*
+
+mnist_images/*
