@@ -126,7 +126,7 @@ if __name__ == "__main__":
     dataset = ImageDataset(directory="./generated_mnist_images", transform=transform)
 
     # Create a DataLoader
-    dataloader = DataLoader(dataset, batch_size=128)
+    dataloader = DataLoader(dataset, batch_size=128, num_workers=2)
     print("Calculating Inception Score")
     is_score = get_inception_score(dataloader, use_torch=True)
 
