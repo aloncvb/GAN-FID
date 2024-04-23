@@ -39,7 +39,7 @@ def inception_score(imgs, batch_size=128, resize=False, splits=1):
             print("inception model(x)")
             x = inception_model(x)
             print("softmax(x, dim=1).data.numpy()")
-            return softmax(x, dim=1).data.numpy()
+            return softmax(x, dim=1).data.cpu().numpy()
         except Exception as e:
             print(e)
             raise e
