@@ -70,16 +70,7 @@ if __name__ == "__main__":
             transforms.ToTensor(),  # Convert image to tensor
         ]
     )
-
-    print("Calculating FID Score")
-    fid_value = calculate_fid_given_paths(
-        paths, batch_size=128, device=device, dims=2048
-    )
-
-    print(f"FID Score: {fid_value}")
-
     # Create a dataset from the image directory
-    # dataset = datasets.ImageFolder(root="./generated_mnist_images", transform=transform)
     directory = "./generated_mnist_images"
     images = [
         os.path.join(directory, f)
@@ -93,3 +84,11 @@ if __name__ == "__main__":
     is_score = inception_score(images, batch_size=128, resize=True)
 
     print(f"Inception Score: {is_score}")
+
+    # fid score
+    print("Calculating FID Score")
+    fid_value = calculate_fid_given_paths(
+        paths, batch_size=128, device=device, dims=2048
+    )
+
+    print(f"FID Score: {fid_value}")
