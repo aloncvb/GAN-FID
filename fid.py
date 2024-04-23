@@ -4,6 +4,7 @@ from torch.nn.functional import softmax
 from torchvision.models import inception_v3, Inception_V3_Weights
 import numpy as np
 from pytorch_fid.fid_score import calculate_fid_given_paths
+from pytorch_gan_metrics import get_inception_score, get_fid
 
 from scipy.stats import entropy
 from torchvision import transforms
@@ -96,8 +97,8 @@ if __name__ == "__main__":
     # str to pil image:
 
     images = [transform(Image.open(img)) for img in images]
-
-    is_score = inception_score(images, batch_size=128, resize=True)
+    dataloader = torch.utils.data.DataLoader(images, batch_size=128)
+    is_score = get_inception_score(dataloader)
 
     print(f"Inception Score: {is_score}")
 
