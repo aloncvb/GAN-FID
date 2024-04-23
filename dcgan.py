@@ -62,7 +62,7 @@ class Discriminator(nn.Module):
 
     def forward(self, input):
         output = self.main(input)
-        return output.view(-1, 1).squeeze(1)  # Flatten the output to (batch_size)
+        return output.view(-1)
 
 
 class DCGAN:
