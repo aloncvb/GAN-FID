@@ -35,6 +35,7 @@ def inception_score(imgs, batch_size=128, resize=False, splits=1):
     print("Inception model set to evaluation mode")
 
     def get_pred(x):
+        print("inception model(x)")
         x = inception_model(x)
         return softmax(x, dim=1).data.numpy()
 
