@@ -51,7 +51,7 @@ def train(
 
         # use fid for better training
         fid_loss = fast_fid(
-            real_images=batch, fake_images=fake_images
+            real_images=data, fake_images=fake_images
         )  # Differentiable FID loss
         loss_g += fid_loss
 
