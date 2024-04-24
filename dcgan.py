@@ -33,10 +33,13 @@ class Generator(nn.Module):
             # State size. (ngf) x 32 x 32
             nn.ConvTranspose2d(feature_num, nc, 4, 2, 1),
             nn.Tanh(),
-            # Output size. (nc) x 64 x 64
+            # Output size. (nc) x 299 x 299
         )
 
     def forward(self, input):
+        print(
+            "Generator output size:", input.size()
+        )  # Should be [batch_size, 3, 299, 299] if correctly configured
         output = self.main(input)
         print(
             "Generator output size:", output.size()
@@ -65,6 +68,9 @@ class Discriminator(nn.Module):
         )
 
     def forward(self, input):
+        print(
+            "discriminator output size:", input.size()
+        )  # Should be [batch_size, 3, 299, 299] if correctly configured
         output = self.main(input)
         print(
             "discriminator output size:", output.size()
