@@ -51,7 +51,7 @@ class FastFID(nn.Module):
 
         # Compute the squared norm of the difference in means
         mean_diff = (
-            torch.norm(mu_real - mu_fake, p=2, dim=1) ** 2
+            torch.norm(mu_real - mu_fake, p=2) ** 2
         )  # size is []. why is this a scalar?
 
         # Efficiently compute the trace of the square root of covariance product
