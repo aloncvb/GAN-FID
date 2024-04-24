@@ -32,7 +32,6 @@ class Generator(nn.Module):
             nn.ReLU(True),
             # State size. (ngf) x 32 x 32
             nn.ConvTranspose2d(feature_num, nc, 4, 2, 1),
-            nn.Upsample(size=(299, 299), mode="bilinear", align_corners=False),
             nn.Tanh(),
             # Output size. (nc) x 299 x 299
         )
