@@ -117,7 +117,7 @@ def main(args):
     transform = transforms.Compose(
         [
             transforms.Resize(
-                (308, 308),
+                (64),
                 interpolation=transforms.InterpolationMode.BICUBIC,  # size_that_worked = 64
             ),
             transforms.Grayscale(num_output_channels=3),  # Convert to RGB
