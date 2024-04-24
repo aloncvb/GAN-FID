@@ -81,14 +81,28 @@ class FastFID(nn.Module):
         #     torch.sqrt(torch.mm(cov_real, cov_fake))
         # )
 
-        # Use Cholesky decomposition to find the square roots of the matrices
-        sqrt_cov_real = torch.linalg.cholesky(cov_real)
-        sqrt_cov_fake = torch.linalg.cholesky(cov_fake)
+        # # Use Cholesky decomposition to find the square roots of the matrices
+        # sqrt_cov_real = torch.linalg.cholesky(cov_real)
+        # sqrt_cov_fake = torch.linalg.cholesky(cov_fake)
 
-        # Compute the product of square roots and then its square root
+        # # Compute the product of square roots and then its square root
+        # product_sqrt = torch.mm(sqrt_cov_real, sqrt_cov_fake)
+        # sqrt_product = torch.linalg.cholesky(product_sqrt)
+
+        # # Trace of the final product
+        # tr_sqrt_product = torch.trace(sqrt_product)
+        # return tr_sqrt_product
+        U_real, S_real, V_real = torch.linalg.svd(cov_real)
+        sqrt_cov_real = torch.mm(U_real, torch.diag(torch.sqrt(S_real)))
+
+        U_fake, S_fake, V_fake = torch.linalg.svd(cov_fake)
+        sqrt_cov_fake = torch.mm(U_fake, torch.diag(torch.sqrt(S_fake)))
+
+        # Compute the product of square roots and then its square root using SVD again
         product_sqrt = torch.mm(sqrt_cov_real, sqrt_cov_fake)
-        sqrt_product = torch.linalg.cholesky(product_sqrt)
+        U_prod, S_prod, V_prod = torch.linalg.svd(product_sqrt)
+        sqrt_product = torch.mm(U_prod, torch.diag(torch.sqrt(S_prod)))
 
         # Trace of the final product
-        tr_sqrt_product = torch.trace(sqrt_product)
+        tr_sqrt_product = torch.sum(S_prod)
         return tr_sqrt_product
