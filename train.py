@@ -12,7 +12,7 @@ from torch.optim import Adam
 from dcgan import DCGAN
 from fast_fid import FastFID
 
-gradient_clip = 5.0
+gradient_clip = 1.0
 
 
 def train(
@@ -53,6 +53,8 @@ def train(
 
         loss_g += fid_loss / 100
         loss_g.backward()
+        for param in dcgan.generator.parameters():
+            param.grad.data.clamp_(-gradient_clip, gradient_clip)
 
         total_loss_g += loss_g.item()
         optimizer_g.step()
