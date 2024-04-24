@@ -7,7 +7,7 @@ import torch.nn as nn
 
 image_size = 28
 nc = 3  # Number of channels in the training images. For color images this is 3
-feature_num = 128  # Size of feature maps in generator/discriminator
+feature_num = 64  # Size of feature maps in generator/discriminator
 
 
 class Generator(nn.Module):

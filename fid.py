@@ -12,7 +12,7 @@ import os
 from PIL import Image
 
 
-def inception_score(imgs, batch_size=128, splits=1):
+def inception_score(imgs, batch_size=64, splits=1):
     """Computes the inception score of the generated images."""
     N = len(imgs)
 
