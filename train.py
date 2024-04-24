@@ -115,7 +115,7 @@ def main(args):
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     transform = transforms.Compose(
         [
-            transforms.Resize(299),  # Resize images to the size expected by Inception
+            transforms.Resize(64),  # Resize images to the size expected by Inception
             # transforms.Grayscale(num_output_channels=3),  # Convert to RGB
             transforms.ToTensor(),
             transforms.Normalize((0.5,), (0.5,)),
