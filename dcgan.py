@@ -61,7 +61,6 @@ class Discriminator(nn.Module):
             nn.BatchNorm2d(feature_num * 8),
             nn.LeakyReLU(0.2, inplace=True),
             nn.Conv2d(feature_num * 8, 1, 4, 1, 0),
-            # nn.Upsample(size=(299, 299), mode="bilinear", align_corners=False),
             nn.Sigmoid(),
         )
 
