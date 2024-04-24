@@ -50,9 +50,7 @@ def train(
         fid_loss: torch.Tensor = fast_fid(
             real_images=data, fake_images=fake_images
         )  # Differentiable FID loss
-        limit_loss = loss_g * torch.clamp(
-            fid_loss, min=1e-10, max=1e-9
-        )  # Limit values to -1 to 1
+        limit_loss = loss_g * (1e-50 * fid_loss)
         loss_g = loss_g + limit_loss
         loss_g.backward()
         for param in dcgan.generator.parameters():
