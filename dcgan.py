@@ -32,6 +32,7 @@ class Generator(nn.Module):
             nn.ReLU(True),
             # State size. (ngf) x 32 x 32
             nn.ConvTranspose2d(feature_num, nc, 4, 2, 1),
+            nn.Upsample(size=(299, 299), mode="bilinear", align_corners=False),
             nn.Tanh(),
             # Output size. (nc) x 299 x 299
         )
@@ -64,7 +65,7 @@ class Discriminator(nn.Module):
             nn.BatchNorm2d(feature_num * 8),
             nn.LeakyReLU(0.2, inplace=True),
             nn.Conv2d(feature_num * 8, 1, 4, 1, 0),
-            nn.Upsample(size=(299, 299), mode="bilinear", align_corners=False),
+            # nn.Upsample(size=(299, 299), mode="bilinear", align_corners=False),
             nn.Sigmoid(),
         )
 
