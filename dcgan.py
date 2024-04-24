@@ -113,9 +113,7 @@ class DCGAN:
 
     def label_fake(self, batch_size):
         fake = self.generate_fake(batch_size)
-        print("fake:", fake.min(), fake.max())
         label = self.label(fake)
-        print("label_fake:", label.min(), label.max())
         return label
 
     def calculate_dicriminator_loss(self, real, fake):
