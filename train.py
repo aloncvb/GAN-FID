@@ -51,7 +51,7 @@ def train(
             real_images=data, fake_images=fake_images
         )  # Differentiable FID loss
 
-        loss_g += fid_loss / 1000
+        loss_g += fid_loss * 0.001
         loss_g.backward()
         for param in dcgan.generator.parameters():
             param.grad.data.clamp_(-gradient_clip, gradient_clip)
