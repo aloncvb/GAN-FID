@@ -53,7 +53,7 @@ def train(
 
         loss_g += fid_loss / 100
         loss_g.backward()
-        torch.nn.utils.clip_grad_norm_(dcgan.generator.parameters(), max_norm=1.0)
+
         total_loss_g += loss_g.item()
         optimizer_g.step()
         batch_idx += 1
