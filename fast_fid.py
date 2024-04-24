@@ -25,8 +25,13 @@ class FastFID(nn.Module):
 
         print("real_images size:", real_images.size())
         print("fake_images size:", fake_images.size())
-        real_feats = self.inception(real_images)  # size is [batch_size, 2048]
-        fake_feats = self.inception(fake_images)  # size is [batch_size, 2048]
+        # Compute features from Inception model
+        real_feats = self.inception(real_images).view(
+            real_images.size(0), -1
+        )  # size is [batch_size, 2048]
+        fake_feats = self.inception(fake_images).view(
+            fake_images.size(0), -1
+        )  # size is [batch_size, 2048]
 
         print("real_feats size:", real_feats.size())
         print("fake_feats size:", fake_feats.size())
