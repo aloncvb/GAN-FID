@@ -67,6 +67,9 @@ class FastFID(nn.Module):
         cov = torch.mm(features_centered.t(), features_centered) / (
             features_centered.size(0) - 1
         )
+        # Regularization to ensure the covariance matrix is positive semidefinite
+        epsilon = 1e-6  # Small constant
+        cov += torch.eye(cov.size(0), device=cov.device) * epsilon
 
         return mu, cov
 
