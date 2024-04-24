@@ -23,8 +23,6 @@ class FastFID(nn.Module):
             fake_images
         )  # size is [batch_size, 3, 299, 299]
 
-        print("real_images size:", real_images.size())
-        print("fake_images size:", fake_images.size())
         # Compute features from Inception model
         real_feats = self.inception(real_images).view(
             real_images.size(0), -1
@@ -33,8 +31,6 @@ class FastFID(nn.Module):
             fake_images.size(0), -1
         )  # size is [batch_size, 2048]
 
-        print("real_feats size:", real_feats.size())
-        print("fake_feats size:", fake_feats.size())
         # Calculate means and covariance matrices
         mu_real, cov_real = self.compute_stats(
             real_feats
@@ -43,21 +39,13 @@ class FastFID(nn.Module):
             fake_feats
         )  # mu_fake size is [2048], cov fake size is [2048, 2048]
 
-        print("mu_real size:", mu_real.size())
-        print("cov_real:", cov_real.size())
-
-        print("mu_fake size:", mu_fake.size())
-        print("cov_fake:", cov_fake.size())
-
         # Compute the squared norm of the difference in means
         mean_diff = torch.norm(mu_real - mu_fake, p=2) ** 2  # size is []. why?
-        print("mean_diff:", mean_diff)
         # Efficiently compute the trace of the square root of covariance product
         tr_sqrt_product = self.fast_trace_sqrt_product(cov_real, cov_fake)
         print("tr_sqrt_product:", tr_sqrt_product)
         # FID formula as given in the paper
         fid_score = mean_diff + tr_sqrt_product
-        print("fid score:", fid_score)  # fid_score is nan
         return fid_score
 
     def compute_stats(self, features):

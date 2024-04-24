@@ -51,6 +51,7 @@ def train(
         fid_loss = fast_fid(
             real_images=data, fake_images=fake_images
         )  # Differentiable FID loss
+        print("fid_loss: ", fid_loss)
         loss_g += fid_loss
         print("loss_g: ", loss_g)
         loss_g.backward()
