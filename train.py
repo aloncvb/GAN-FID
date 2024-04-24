@@ -34,9 +34,7 @@ def train(
         # discriminator train
         real_label = dcgan.label_real(data)
         fake_label = dcgan.label_fake(batch_size=batch_size)
-        loss_d = dcgan.calculate_dicriminator_loss(
-            real_label, fake_label, batch_size=batch_size
-        )
+        loss_d = dcgan.calculate_dicriminator_loss(real_label, fake_label)
         loss_d.backward()
         for param in dcgan.discriminator.parameters():
             param.grad.data.clamp_(-gradient_clip, gradient_clip)
@@ -47,7 +45,7 @@ def train(
         optimizer_g.zero_grad()
         fake_images = dcgan.generate_fake(batch_size)
         results = dcgan.label(fake_images)
-        loss_g = dcgan.calculate_generator_loss(results, batch_size=batch_size)
+        loss_g = dcgan.calculate_generator_loss(results)
 
         # use fid for better training
         fid_loss = fast_fid(
@@ -88,7 +86,7 @@ def test(
             total_loss_d += loss_d.item()
             fake_images = dcgan.generate_fake(batch_size)
             results = dcgan.label(fake_images)
-            loss_g = dcgan.calculate_generator_loss(results, batch_size=batch_size)
+            loss_g = dcgan.calculate_generator_loss(results)
 
             # use fid for better training
             fid_loss = fast_fid(
