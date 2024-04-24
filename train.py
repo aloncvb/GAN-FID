@@ -55,9 +55,11 @@ def train(
         loss_g += fid_loss
         print("loss_g: ", loss_g)
         loss_g.backward()
+        print("after backward: ")
         total_loss_g += loss_g.item()
+        print("after total loss")
         optimizer_g.step()
-
+        print("after optimizer step")
         batch_idx += 1
     return total_loss_d / batch_idx, total_loss_g / batch_idx
 
