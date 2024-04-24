@@ -12,7 +12,7 @@ from torch.optim import Adam
 from dcgan import DCGAN
 from fast_fid import FastFID
 
-gradient_clip = 1.0
+gradient_clip = 1e-1
 
 
 def train(
