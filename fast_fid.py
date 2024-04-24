@@ -77,6 +77,18 @@ class FastFID(nn.Module):
         # Placeholder for fast trace sqrt computation of covariances
         # Real implementation would require computing the eigenvalues
         # and then their square roots, which is simplified here
-        return torch.trace(torch.sqrt(cov_real + cov_fake)) - 2 * torch.trace(
-            torch.sqrt(torch.mm(cov_real, cov_fake))
-        )
+        # return torch.trace(torch.sqrt(cov_real + cov_fake)) - 2 * torch.trace(
+        #     torch.sqrt(torch.mm(cov_real, cov_fake))
+        # )
+
+        # Use Cholesky decomposition to find the square roots of the matrices
+        sqrt_cov_real = torch.linalg.cholesky(cov_real)
+        sqrt_cov_fake = torch.linalg.cholesky(cov_fake)
+
+        # Compute the product of square roots and then its square root
+        product_sqrt = torch.mm(sqrt_cov_real, sqrt_cov_fake)
+        sqrt_product = torch.linalg.cholesky(product_sqrt)
+
+        # Trace of the final product
+        tr_sqrt_product = torch.trace(sqrt_product)
+        return tr_sqrt_product
