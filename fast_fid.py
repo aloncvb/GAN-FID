@@ -50,9 +50,8 @@ class FastFID(nn.Module):
         print("cov_fake:", cov_fake.size())
 
         # Compute the squared norm of the difference in means
-        mean_diff = (
-            torch.norm(mu_real - mu_fake, p=2) ** 2
-        )  # size is []. why is this a scalar?
+        mean_diff = torch.norm(mu_real - mu_fake, p=2) ** 2  # size is []. why?
+        print("mean diff value:", mean_diff)
 
         # Efficiently compute the trace of the square root of covariance product
         tr_sqrt_product = self.fast_trace_sqrt_product(cov_real, cov_fake)
