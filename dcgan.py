@@ -108,9 +108,9 @@ class DCGAN:
     def calculate_dicriminator_loss(self, real, fake):
         soft_real = torch.full(real.size(), 0.9, device=self.device)
         soft_fake = torch.full(fake.size(), 0.1, device=self.device)
+        print("real:", real.min(), real.max())
+        print("fake:", fake.min(), fake.max())
         check = self.loss(real, soft_real) + self.loss(fake, soft_fake)
-        print(check)
-        print(check.min().item(), check.max().item())
         return check
 
     def calculate_generator_loss(self, dis_label):
