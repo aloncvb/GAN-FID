@@ -69,6 +69,15 @@ class Discriminator(nn.Module):
         return output
 
 
+def weights_init(m):
+    classname = m.__class__.__name__
+    if classname.find("Conv") != -1:
+        nn.init.normal_(m.weight.data, 0.0, 0.02)
+    elif classname.find("BatchNorm") != -1:
+        nn.init.normal_(m.weight.data, 1.0, 0.02)
+        nn.init.constant_(m.bias.data, 0)
+
+
 class DCGAN:
     def __init__(self, latent_dim, device):
         super(DCGAN, self).__init__()
@@ -76,6 +85,8 @@ class DCGAN:
         self.generator.to(device)
         self.discriminator = Discriminator()
         self.discriminator.to(device)
+        self.generator.apply(weights_init)
+        self.discriminator.apply(weights_init)
         self.device = device
         self.latent_dim = latent_dim
         self.loss = nn.BCELoss()  # change to mse loss for bce loss
@@ -92,9 +103,7 @@ class DCGAN:
         return self.discriminator(x).squeeze()
 
     def generate_latent(self, batch_size):
-        return torch.randn(batch_size, self.latent_dim, device=self.device).view(
-            -1, self.latent_dim, 1, 1
-        )
+        return torch.randn(batch_size, self.latent_dim, 1, 1, device=self.device)
 
     def generate_fake(self, batch_size):
         return self.generator(self.generate_latent(batch_size))
@@ -112,8 +121,6 @@ class DCGAN:
     def calculate_dicriminator_loss(self, real, fake):
         soft_real = torch.full(real.size(), 0.9, device=self.device)
         soft_fake = torch.full(fake.size(), 0.1, device=self.device)
-        print("real:", real.min(), real.max())
-        print("fake:", fake.min(), fake.max())
         check = self.loss(real, soft_real) + self.loss(fake, soft_fake)
         return check
 
