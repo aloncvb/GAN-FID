@@ -7,7 +7,7 @@ import torch.nn as nn
 
 image_size = 28
 nc = 3  # Number of channels in the training images. For color images this is 3
-feature_num = 64  # Size of feature maps in generator/discriminator
+feature_num = 128  # Size of feature maps in generator/discriminator
 
 
 class Generator(nn.Module):
@@ -38,13 +38,10 @@ class Generator(nn.Module):
         )
 
     def forward(self, input):
-        print(
-            "Generator input size:", input.size()
-        )  # Should be [batch_size, 3, 299, 299] if correctly configured
         output = self.main(input)
-        print(
-            "Generator output size:", output.size()
-        )  # Should be [batch_size, 3, 299, 299] if correctly configured
+        # print(
+        #     "Generator output size:", output.size()
+        # )  # Should be [batch_size, 3, 299, 299] if correctly configured
         return output
 
 
@@ -70,13 +67,7 @@ class Discriminator(nn.Module):
         )
 
     def forward(self, input):
-        print(
-            "discriminator input size:", input.size()
-        )  # Should be [batch_size, 3, 299, 299] if correctly configured
         output = self.main(input)
-        print(
-            "discriminator output size:", output.size()
-        )  # Should be [batch_size, 3, 299, 299] if correctly configured
         return output
 
 
