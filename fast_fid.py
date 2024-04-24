@@ -51,19 +51,13 @@ class FastFID(nn.Module):
 
         # Compute the squared norm of the difference in means
         mean_diff = torch.norm(mu_real - mu_fake, p=2) ** 2  # size is []. why?
-        print("mean diff value:", mean_diff)
 
         # Efficiently compute the trace of the square root of covariance product
         tr_sqrt_product = self.fast_trace_sqrt_product(cov_real, cov_fake)
 
-        print("mean_diff size:", mean_diff.size())
-        print("tr_sqrt_product:", tr_sqrt_product.size())
-
         # FID formula as given in the paper
         fid_score = mean_diff + tr_sqrt_product
-        print(
-            "fid score output size:", fid_score.size()
-        )  # Should be [batch_size, 3, 299, 299] if correctly configured
+        print("fid score:", fid_score)
         return fid_score
 
     def compute_stats(self, features):
