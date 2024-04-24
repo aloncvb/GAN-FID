@@ -46,7 +46,7 @@ class FastFID(nn.Module):
 
         # Compute the squared norm of the difference in means
         mean_diff = (
-            torch.norm(mu_real - mu_fake, p=2, dim=1) ** 2
+            torch.norm(mu_real - mu_fake, p=2) ** 2
         )  # size is []. why is this a scalar?
 
         # Efficiently compute the trace of the square root of covariance product
@@ -63,11 +63,23 @@ class FastFID(nn.Module):
         return fid_score
 
     def compute_stats(self, features):
-        mu = torch.mean(features, dim=0)
-        features_centered = features - mu
+        # Assuming features shape is [batch_size, num_features]
+        # Compute mean across the batch dimension (0th dimension)
+        mu = torch.mean(
+            features, dim=0
+        )  # This should give you a shape of [num_features]
+
+        # Center the features by subtracting the mean
+        features_centered = features - mu.unsqueeze(
+            0
+        )  # Adding dimension for broadcasting
+
+        # Compute the covariance matrix
+        # The matrix multiplication should be on transposed centered features and the centered features
         cov = torch.mm(features_centered.t(), features_centered) / (
             features_centered.size(0) - 1
         )
+
         return mu, cov
 
     def fast_trace_sqrt_product(self, cov_real, cov_fake):
