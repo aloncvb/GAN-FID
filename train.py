@@ -122,7 +122,7 @@ def main(args):
             ),
             transforms.Grayscale(num_output_channels=3),  # Convert to RGB
             transforms.ToTensor(),
-            transforms.Normalize((0.5,), (0.5,)),
+            transforms.Normalize(mean=(0.5, 0.5, 0.5), std=(0.5, 0.5, 0.5)),
         ]
     )
 
