@@ -30,6 +30,9 @@ class FastFID(nn.Module):
 
         # FID formula as given in the paper
         fid_score = mean_diff + tr_sqrt_product
+        print(
+            "fid score output size:", fid_score.size()
+        )  # Should be [batch_size, 3, 299, 299] if correctly configured
         return fid_score
 
     def compute_stats(self, features):

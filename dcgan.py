@@ -37,7 +37,11 @@ class Generator(nn.Module):
         )
 
     def forward(self, input):
-        return self.main(input)
+        output = self.main(input)
+        print(
+            "Generator output size:", output.size()
+        )  # Should be [batch_size, 3, 299, 299] if correctly configured
+        return output
 
 
 class Discriminator(nn.Module):
@@ -62,6 +66,9 @@ class Discriminator(nn.Module):
 
     def forward(self, input):
         output = self.main(input)
+        print(
+            "discriminator output size:", output.size()
+        )  # Should be [batch_size, 3, 299, 299] if correctly configured
         return output
 
 
@@ -109,6 +116,6 @@ class DCGAN:
         return self.loss(real, soft_real) + self.loss(fake, soft_fake)
 
     def calculate_generator_loss(self, dis_label, batch_size):
-        real_label = torch.ones(batch_size, device=self.device)
+        # real_label = torch.ones(batch_size, device=self.device)
         soft_real = torch.full((batch_size,), 0.9, device=self.device)
         return self.loss(dis_label, soft_real)
