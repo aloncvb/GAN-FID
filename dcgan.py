@@ -38,7 +38,7 @@ class Generator(nn.Module):
 
     def forward(self, input):
         print(
-            "Generator output size:", input.size()
+            "Generator input size:", input.size()
         )  # Should be [batch_size, 3, 299, 299] if correctly configured
         output = self.main(input)
         print(
@@ -69,7 +69,7 @@ class Discriminator(nn.Module):
 
     def forward(self, input):
         print(
-            "discriminator output size:", input.size()
+            "discriminator input size:", input.size()
         )  # Should be [batch_size, 3, 299, 299] if correctly configured
         output = self.main(input)
         print(
