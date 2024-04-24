@@ -32,6 +32,13 @@ class FastFID(nn.Module):
         # Efficiently compute the trace of the square root of covariance product
         tr_sqrt_product = self.fast_trace_sqrt_product(cov_real, cov_fake)
 
+        print(
+            "mean_diff size:", mean_diff.size()
+        )  # Should be [batch_size, 3, 299, 299] if correctly configured
+        print(
+            "tr_sqrt_product:", tr_sqrt_product.size()
+        )  # Should be [batch_size, 3, 299, 299] if correctly configured
+
         # FID formula as given in the paper
         fid_score = mean_diff + tr_sqrt_product
         print(
