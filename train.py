@@ -46,12 +46,13 @@ def train(
         fake_images = dcgan.generate_fake(batch_size)
         results = dcgan.label(fake_images)
         loss_g = dcgan.calculate_generator_loss(results)
-        # use fid for better training
-        fid_loss: torch.Tensor = fast_fid(
-            real_images=data, fake_images=fake_images
-        )  # Differentiable FID loss
-        limit_loss = loss_g.item() * (1e-5 * fid_loss.item())
-        loss_g = loss_g + limit_loss
+        if batch_idx % 100 == 0:
+            # use fid for better training
+            fid_loss: torch.Tensor = fast_fid(
+                real_images=data, fake_images=fake_images
+            )  # Differentiable FID loss
+            limit_loss = loss_g.item() * (1e-5 * fid_loss.item())
+            loss_g = loss_g + limit_loss
         loss_g.backward()
         for param in dcgan.generator.parameters():
             param.grad.data.clamp_(-gradient_clip, gradient_clip)
@@ -81,19 +82,17 @@ def test(
             batch_size = data.size()[0]
             real_label = dcgan.label_real(data)
             fake_label = dcgan.label_fake(batch_size=batch_size)
-            loss_d = dcgan.calculate_dicriminator_loss(
-                real_label, fake_label, batch_size=batch_size
-            )
+            loss_d = dcgan.calculate_dicriminator_loss(real_label, fake_label)
             total_loss_d += loss_d.item()
             fake_images = dcgan.generate_fake(batch_size)
             results = dcgan.label(fake_images)
             loss_g = dcgan.calculate_generator_loss(results)
 
-            # use fid for better training
-            fid_loss = fast_fid(
-                real_images=batch, fake_images=fake_images
-            )  # Differentiable FID loss
-            loss_g += fid_loss / 100
+            # # use fid for better training
+            # fid_loss = fast_fid(
+            #     real_images=batch, fake_images=fake_images
+            # )  # Differentiable FID loss
+            # loss_g += fid_loss / 100
 
             total_loss_g += loss_g.item()
             batch_idx += 1
