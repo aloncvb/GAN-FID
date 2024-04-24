@@ -68,7 +68,7 @@ class FastFID(nn.Module):
             features_centered.size(0) - 1
         )
         # Regularization to ensure the covariance matrix is positive semidefinite
-        epsilon = 1e-6  # Small constant
+        epsilon = 1e-3
         cov += torch.eye(cov.size(0), device=cov.device) * epsilon
 
         return mu, cov
