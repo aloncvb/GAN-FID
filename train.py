@@ -207,7 +207,7 @@ if __name__ == "__main__":
         "--dataset", help="dataset to be modeled.", type=str, default="mnist"
     )
     parser.add_argument(
-        "--batch_size", help="number of images in a mini-batch.", type=int, default=128
+        "--batch_size", help="number of images in a mini-batch.", type=int, default=64
     )
     parser.add_argument(
         "--epochs", help="maximum number of iterations.", type=int, default=20
