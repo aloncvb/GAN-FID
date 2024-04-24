@@ -125,5 +125,5 @@ class DCGAN:
 
     def calculate_generator_loss(self, dis_label, batch_size):
         # real_label = torch.ones(batch_size, device=self.device)
-        soft_real = torch.full((batch_size,), 0.9, device=self.device)
+        soft_real = torch.full(dis_label.size(), 0.9, device=self.device)
         return self.loss(dis_label, soft_real)
