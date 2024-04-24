@@ -33,10 +33,10 @@ class FastFID(nn.Module):
         # Calculate means and covariance matrices
         mu_real, cov_real = self.compute_stats(
             real_feats
-        )  # size is [2048], [2048, 2048]
+        )  # mu_real size is [2048], cov real size is [2048, 2048]
         mu_fake, cov_fake = self.compute_stats(
             fake_feats
-        )  # size is [2048], [2048, 2048]
+        )  # mu_fake size is [2048], cov fake size is [2048, 2048]
 
         print("mu_real size:", mu_real.size())
         print("cov_real:", cov_real.size())
