@@ -46,13 +46,13 @@ def train(
         fake_images = dcgan.generate_fake(batch_size)
         results = dcgan.label(fake_images)
         loss_g = dcgan.calculate_generator_loss(results)
-
+        print("loss_g: ", loss_g)
         # use fid for better training
         fid_loss = fast_fid(
             real_images=data, fake_images=fake_images
         )  # Differentiable FID loss
         loss_g += fid_loss
-
+        print("loss_g: ", loss_g)
         loss_g.backward()
         total_loss_g += loss_g.item()
         optimizer_g.step()
