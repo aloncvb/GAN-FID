@@ -51,7 +51,7 @@ def train(
             real_images=data, fake_images=fake_images
         )  # Differentiable FID loss
         limit_loss = loss_g * torch.clamp(
-            fid_loss, min=1e-4, max=1e-3
+            fid_loss, min=1e-10, max=1e-9
         )  # Limit values to -1 to 1
         loss_g = loss_g + limit_loss
         loss_g.backward()
