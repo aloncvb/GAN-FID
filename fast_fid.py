@@ -9,12 +9,16 @@ class FastFID(nn.Module):
         super(FastFID, self).__init__()
         self.inception = inception_v3(weights=Inception_V3_Weights.IMAGENET1K_V1)
         self.inception.fc = nn.Identity().to(device)
+        self.adaptive_pool = nn.AdaptiveAvgPool2d((299, 299))
         self.inception.to(device)
         self.inception.eval()
         self.device = device
 
     def forward(self, real_images, fake_images):
         # Compute features from Inception model
+        real_images = self.adaptive_pool(real_images)
+        fake_images = self.adaptive_pool(fake_images)
+
         real_feats = self.inception(real_images)
         fake_feats = self.inception(fake_images)
 

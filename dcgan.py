@@ -105,14 +105,11 @@ class DCGAN:
     def label_fake(self, batch_size):
         return self.label(self.generate_fake(batch_size))
 
-    def calculate_dicriminator_loss(self, real, fake, batch_size):
+    def calculate_dicriminator_loss(self, real, fake):
         soft_real = torch.full(real.size(), 0.9, device=self.device)
         soft_fake = torch.full(fake.size(), 0.1, device=self.device)
-        # real_label = torch.ones(batch_size, device=self.device)
-        # fake_label = torch.zeros(batch_size, device=self.device)
         return self.loss(real, soft_real) + self.loss(fake, soft_fake)
 
-    def calculate_generator_loss(self, dis_label, batch_size):
-        # real_label = torch.ones(batch_size, device=self.device)
+    def calculate_generator_loss(self, dis_label):
         soft_real = torch.full(dis_label.size(), 0.9, device=self.device)
         return self.loss(dis_label, soft_real)
