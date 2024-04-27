@@ -47,7 +47,7 @@ def train(
         results = dcgan.label(fake_images)
         loss_g = dcgan.calculate_generator_loss(results)
         if batch_idx % 10 == 0:
-            fake_images_fid = dcgan.generate_fake(100)  # 1000 for stable score
+            fake_images_fid = dcgan.generate_fake(batch_size)  # 1000 for stable score
             # use fid for better training
             fid_loss: torch.Tensor = fast_fid(
                 real_images=data, fake_images=fake_images_fid
