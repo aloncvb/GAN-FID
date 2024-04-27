@@ -53,7 +53,7 @@ def train(
                 real_images=data, fake_images=fake_images_fid
             )  # Differentiable FID loss
             # limit the loss by previous loss:
-            limit_loss = loss_g * (1e-10 * fid_loss.item())
+            limit_loss = 0.1 * fid_loss.item()
             loss_g = loss_g + limit_loss
         loss_g.backward()
         for param in dcgan.generator.parameters():
