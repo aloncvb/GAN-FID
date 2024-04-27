@@ -53,7 +53,7 @@ def train(
                 real_images=data, fake_images=fake_images_fid
             )  # Differentiable FID loss
             # limit the loss by previous loss:
-            limit_loss = loss_g.item * (1e-5 * fid_loss.item())
+            limit_loss = loss_g.item() * (1e-5 * fid_loss.item())
             print(limit_loss)
             print(loss_g * (1e-5 * fid_loss.item()))
             loss_g = loss_g + limit_loss
