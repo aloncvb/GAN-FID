@@ -35,7 +35,7 @@ def save_generated_images(generator, latent_dim, num_images, folder_path):
 
 try:
     latent_dim = 100
-    num_images = 1000
+    num_images = 10000
     folder_path = "generated_mnist_images"  # Specify the path
 
     generator = Generator(latent_dim).to(device)
