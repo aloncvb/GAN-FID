@@ -11,6 +11,7 @@ from torch.utils.data import DataLoader
 from torch.optim import Adam
 from dcgan import DCGAN
 from fast_fid import FastFID
+from diff_fid import inception_model, get_activation_statistics, frechet_distance
 
 gradient_clip = 5.0
 
@@ -47,13 +48,24 @@ def train(
         results = dcgan.label(fake_images)
         loss_g = dcgan.calculate_generator_loss(results)
         if batch_idx % 10 == 0:
+            real_mu, real_sigma = get_activation_statistics(
+                data,
+                inception_model,
+                batch_size=batch_size,
+                device=dcgan.device,
+            )
             fake_images_fid = dcgan.generate_fake(batch_size)  # 1000 for stable score
             # use fid for better training
-            fid_loss: torch.Tensor = fast_fid(
-                real_images=data, fake_images=fake_images_fid
-            )  # Differentiable FID loss
-            # limit the loss by previous loss:
-            limit_loss = 0.1 * fid_loss.item()
+            fake_mu, fake_sigma = get_activation_statistics(
+                fake_images_fid,
+                inception_model,
+                batch_size=batch_size,
+                device=dcgan.device,
+            )
+            fid_loss = frechet_distance(real_mu, real_sigma, fake_mu, fake_sigma)
+
+            # * loss_g # loss_g is there to scale loss in the range of generator loss
+            limit_loss = 0.01 * fid_loss
             loss_g = loss_g + limit_loss
         loss_g.backward()
         for param in dcgan.generator.parameters():
