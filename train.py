@@ -63,7 +63,6 @@ def train(
                 device=dcgan.device,
             )
             fid_loss = frechet_distance(real_mu, real_sigma, fake_mu, fake_sigma)
-            print("fid_loss: ", fid_loss.item())
             # * loss_g # loss_g is there to scale loss in the range of generator loss
             limit_loss = 0.01 * fid_loss
             loss_g = loss_g + limit_loss
