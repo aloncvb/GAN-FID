@@ -34,7 +34,7 @@ def get_activation_statistics(images, model, batch_size=50, dims=2048, device="c
         pred_arr[start:end] = pred.view(batch.size(0), -1)
 
     mu = torch.mean(pred_arr, dim=0)
-    sigma = torch.cov(pred_arr, rowvar=False)
+    sigma = torch.cov(pred_arr)
     return mu, sigma
 
 
