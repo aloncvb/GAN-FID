@@ -46,15 +46,12 @@ def frechet_distance(mu1, sigma1, mu2, sigma2, eps=1e-6) -> torch.Tensor:
     sigma2 = sigma2.to(torch.float32)
 
     diff = mu1 - mu2
-    covmean = sigma1 @ sigma2
-    covmean = torch.cholesky(covmean)
-    covmean = covmean @ covmean.transpose(-2, -1)
+    # Product might be almost singular
+    covmean = torch.sqrt(torch.matmul(sigma1, sigma2))
 
     # Numerically stabilize with epsilon
     if not torch.isfinite(covmean).all():
-        covmean += (
-            torch.eye(covmean.size(0), device=covmean.device, dtype=covmean.dtype) * eps
-        )
+        covmean = covmean + torch.eye(sigma1.size(0)) * eps
 
     # FID calculation
     dist = (

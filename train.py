@@ -61,7 +61,7 @@ def train(
         fake_images = dcgan.generate_fake(batch_size)
         results = dcgan.label(fake_images)
         loss_g = dcgan.calculate_generator_loss(results)
-        if batch_idx % 10 == 0:
+        if batch_idx % 1 == 0:
             if learning_way == "lr":
                 real_mu, real_sigma = get_activation_statistics(
                     data,
@@ -102,7 +102,7 @@ def train(
             fid_loss = frechet_distance(real_mu, real_sigma, fake_mu, fake_sigma)
             # * loss_g # loss_g is there to scale loss in the range of generator loss
             limit_loss = fid_loss
-            loss_g = limit_loss
+            loss_g = 0.5 * loss_g + 0.5 * limit_loss
         loss_g.backward()
         for param in dcgan.generator.parameters():
             param.grad.data.clamp_(-gradient_clip, gradient_clip)
