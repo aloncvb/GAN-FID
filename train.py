@@ -60,7 +60,7 @@ def train(
         fake_images = dcgan.generate_fake(batch_size)
         results = dcgan.label(fake_images)
         loss_g = dcgan.calculate_generator_loss(results)
-        if batch_idx % 5 == 0:
+        if batch_idx % 1 == 0:
             if learning_way == "lr":
                 real_mu, real_sigma = get_activation_statistics(
                     data,
