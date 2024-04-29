@@ -40,10 +40,10 @@ def get_activation_statistics(images, model, batch_size=50, dims=2048, device="c
 
 def frechet_distance(mu1, sigma1, mu2, sigma2, eps=1e-6) -> torch.Tensor:
     """Calculation of the Frechet Distance between two Gaussians."""
-    mu1 = mu1.to(torch.float32)
-    mu2 = mu2.to(torch.float32)
-    sigma1 = sigma1.to(torch.float32)
-    sigma2 = sigma2.to(torch.float32)
+    mu1 = mu1.to(torch.float16)
+    mu2 = mu2.to(torch.float16)
+    sigma1 = sigma1.to(torch.float16)
+    sigma2 = sigma2.to(torch.float16)
 
     diff = mu1 - mu2
     # Product might be almost singular
