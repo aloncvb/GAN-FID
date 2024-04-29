@@ -157,6 +157,5 @@ data/*
 
 mnist_images/*
 generated_mnist_images/*
-models/*
 samples/*
 generated_mnist_images_first/*
