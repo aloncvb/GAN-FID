@@ -118,7 +118,9 @@ def train(generator: Generator, trainloader: DataLoader):
             data,
             device=device,
         )
-        fake_images_fid = generator(batch_size)  # 1000 for stable score
+        fake_images_fid = generator(
+            torch.randn(batch_size, 100, 1, 1, device=device)
+        )  # 1000 for stable score
         # use fid for better training
         fake_mu, fake_sigma = get_activation_statistics(
             fake_images_fid,
@@ -143,7 +145,7 @@ def test(
 ):
     generator.eval()  # set to inference mode
     with torch.no_grad():
-        samples = generator(100)
+        samples = generator(torch.randn(100, 100, 1, 1, device=device))
         torchvision.utils.save_image(
             torchvision.utils.make_grid(samples),
             "./samples/" + filename + "epoch%d.png" % epoch,
@@ -160,7 +162,9 @@ def test(
                 data,
                 device=device,
             )
-            fake_images_fid = generator(batch_size)  # 1000 for stable score
+            fake_images_fid = generator(
+                torch.randn(batch_size, 100, 1, 1, device=device)
+            )  # 1000 for stable score
             # use fid for better training
             fake_mu, fake_sigma = get_activation_statistics(
                 fake_images_fid,
