@@ -69,10 +69,5 @@ def frechet_distance(mu1, sigma1, mu2, sigma2, eps=1e-6) -> torch.Tensor:
         covmean = covmean + torch.eye(sigma1.size(0)) * eps
 
     # FID calculation
-    dist = (
-        (diff @ diff)
-        + torch.trace(sigma1)
-        + torch.trace(sigma2)
-        - 2 * torch.trace(covmean)
-    )
+    dist = (diff @ diff) + torch.trace(sigma1) + torch.trace(sigma2) - 2 * covmean
     return dist
