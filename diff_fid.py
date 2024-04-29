@@ -13,28 +13,20 @@ def inception_feature_extractor():
 inception_model = inception_feature_extractor()
 
 
-def get_activation_statistics(images, model, batch_size=50, dims=2048, device="cuda"):
-    model.to(device)
-    model.eval()
+def get_activation_statistics(images, device="cuda"):
+    inception_model.to(device)
+    inception_model.eval()
     upsizing_images = F.interpolate(
         images, size=(299, 299), mode="bilinear", align_corners=False
     )
-    n_batches = len(upsizing_images) // batch_size
-    n_used_imgs = n_batches * batch_size
 
-    pred_arr = torch.empty((n_used_imgs, dims)).to(device)
+    with torch.no_grad():
+        pred = inception_model(upsizing_images)
 
-    for i in range(n_batches):
-        start = i * batch_size
-        end = start + batch_size
-        batch = upsizing_images[start:end].to(device)
-        with torch.no_grad():
-            pred = model(batch)
+    pred = pred.detach().cpu().numpy()
 
-        pred_arr[start:end] = pred.view(batch.size(0), -1)
-
-    mu = torch.mean(pred_arr, dim=0)
-    sigma = torch.cov(pred_arr)
+    mu = torch.mean(pred, dim=0)
+    sigma = torch.cov(pred)
     return mu, sigma
 
 
