@@ -11,9 +11,7 @@ from torch.utils.data import DataLoader
 from torch.optim import Adam
 from dcgan import DCGAN
 from fast_fid import FastFID
-from diff_fid import inception_model, get_activation_statistics, frechet_distance
-
-gradient_clip = 5.0
+from diff_fid import get_activation_statistics, frechet_distance
 
 
 def get_reward(d_loss, old_fid, new_fid):
