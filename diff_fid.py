@@ -56,10 +56,10 @@ def trace_of_matrix_sqrt(C1, C2):
 
 def frechet_distance(mu1, sigma1, mu2, sigma2, eps=1e-6) -> torch.Tensor:
     """Calculation of the Frechet Distance between two Gaussians."""
-    mu1 = mu1.to(torch.float16)
-    mu2 = mu2.to(torch.float16)
-    sigma1 = sigma1.to(torch.float16)
-    sigma2 = sigma2.to(torch.float16)
+    mu1 = mu1.to(torch.float32)
+    mu2 = mu2.to(torch.float32)
+    sigma1 = sigma1.to(torch.float32)
+    sigma2 = sigma2.to(torch.float32)
 
     diff = mu1 - mu2
 
