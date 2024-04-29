@@ -1,11 +1,20 @@
 from dcgan import Generator
 import torch
-from torchvision import transforms
 from torchvision.models import inception_v3
 import time
 import numpy as np
 import torch.nn as nn
-import torchvision
+import argparse
+from torchvision import transforms
+
+import matplotlib.pyplot as plt
+import torch.utils
+import torch.utils.data
+import torch, torchvision
+from torch.utils.data import DataLoader
+from torch.optim import Adam
+from diff_fid import inception_model, get_activation_statistics, frechet_distance
+
 
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
@@ -17,7 +26,7 @@ def load_inception_net():
 
 print("Loading inception... ", end="", flush=True)
 t0 = time.time()
-inception = load_inception_net().cuda().eval().half()
+# inception_model = load_inception_net().cuda().eval().half()
 print("DONE! %.4fs" % (time.time() - t0))
 
 mu1 = np.load("I128_inception_moments.npz")["mu"]
@@ -53,7 +62,7 @@ def calculate_activation_statistics(images1, batch_size):
     for batch_idx in range(n_batches):
         start_idx = batch_size * batch_idx
         end_idx = batch_size * (batch_idx + 1)
-        act1[start_idx:end_idx, :] = inception(images1[start_idx:end_idx])[0]
+        act1[start_idx:end_idx, :] = inception_model(images1[start_idx:end_idx])[0]
     act1 = act1.t()
 
     d, bs = act1.shape
@@ -72,15 +81,7 @@ def calculate_frechet_distance_fast(mu1, sigma1, mu2, sigma2, eps=1e-6):
     return mu + tr1 + tr2 - 2 * tr_covmean
 
 
-def fastprefid(
-    images1,
-    mu2,
-    sigma2,
-    batch_size=-1,
-    preprocess=True,
-    measure_time=False,
-    gradient_checkpointing=False,
-):
+def fastprefid(images1, mu2, sigma2, batch_size=-1):
     up = nn.Upsample((299, 299), mode="bilinear")
     images1 = up(images1)
 
@@ -103,53 +104,182 @@ def toggle_grad(model, on_or_off):
                     p.requires_grad = False
 
 
-def train():
-    # Load the weights
-    G = Generator(100).to(device)
-    optim = torch.optim.Adam(G.parameters(), lr=0.0001, betas=(0.0, 0.99))
-    G.load_state_dict(
+def train(generator: Generator, trainloader: DataLoader):
+    optim = Adam(generator.parameters(), lr=0.0001, betas=(0.0, 0.99))
+
+    total_loss_g = 0
+    batch_idx = 0
+    for batch, _ in trainloader:
+        data = batch.to(device)
+        optim.zero_grad()
+        batch_size = data.size()[0]
+
+        real_mu, real_sigma = get_activation_statistics(
+            data,
+            device=device,
+        )
+        fake_images_fid = generator(batch_size)  # 1000 for stable score
+        # use fid for better training
+        fake_mu, fake_sigma = get_activation_statistics(
+            fake_images_fid,
+            device=device,
+        )
+        fid_loss = frechet_distance(real_mu, real_sigma, fake_mu, fake_sigma)
+        # * loss_g # loss_g is there to scale loss in the range of generator loss
+        limit_loss = fid_loss
+        loss_g = limit_loss
+        loss_g.backward()
+
+        total_loss_g += loss_g.item()
+        optim.step()
+        batch_idx += 1
+    return total_loss_g / batch_idx
+
+
+def test(
+    generator: Generator,
+    testloader: DataLoader,
+    filename: str,
+    epoch: int,
+):
+    generator.eval()  # set to inference mode
+    with torch.no_grad():
+        samples = generator(100)
+        torchvision.utils.save_image(
+            torchvision.utils.make_grid(samples),
+            "./samples/" + filename + "epoch%d.png" % epoch,
+        )
+
+        total_loss_g = 0
+        total_loss_d = 0
+        batch_idx = 0
+        for batch, _ in testloader:
+            data = batch.to(device)
+            batch_size = data.size()[0]
+
+            real_mu, real_sigma = get_activation_statistics(
+                data,
+                device=device,
+            )
+            fake_images_fid = generator(batch_size)  # 1000 for stable score
+            # use fid for better training
+            fake_mu, fake_sigma = get_activation_statistics(
+                fake_images_fid,
+                device=device,
+            )
+            fid_loss = frechet_distance(real_mu, real_sigma, fake_mu, fake_sigma)
+            # * loss_g # loss_g is there to scale loss in the range of generator loss
+            loss_g = fid_loss
+
+            total_loss_g += loss_g.item()
+            batch_idx += 1
+        print(
+            "Epoch: {} Test set: Average loss_d: {:.4f}".format(
+                epoch, total_loss_d / batch_idx
+            )
+        )
+        print(
+            "Epoch: {} Test set: Average loss_g: {:.4f}".format(
+                epoch, total_loss_g / batch_idx
+            )
+        )
+    return total_loss_g / batch_idx
+
+
+def main(args):
+    device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+
+    transform = transforms.Compose(
+        [
+            transforms.Resize(
+                (64),
+                interpolation=transforms.InterpolationMode.BICUBIC,  # size_that_worked = 64
+            ),
+            transforms.Grayscale(num_output_channels=3),  # Convert to RGB
+            transforms.ToTensor(),
+            transforms.Normalize(mean=(0.5, 0.5, 0.5), std=(0.5, 0.5, 0.5)),
+        ]
+    )
+
+    if args.dataset == "mnist":
+        trainset = torchvision.datasets.MNIST(
+            root="./data/MNIST", train=True, download=True, transform=transform
+        )
+        trainloader = torch.utils.data.DataLoader(
+            trainset, batch_size=args.batch_size, shuffle=True, num_workers=2
+        )
+        testset = torchvision.datasets.MNIST(
+            root="./data/MNIST", train=False, download=True, transform=transform
+        )
+        testloader = torch.utils.data.DataLoader(
+            testset, batch_size=args.batch_size, shuffle=False, num_workers=2
+        )
+    elif args.dataset == "fashion-mnist":
+        trainset = torchvision.datasets.FashionMNIST(
+            root="~/torch/data/FashionMNIST",
+            train=True,
+            download=True,
+            transform=transform,
+        )
+        trainloader = torch.utils.data.DataLoader(
+            trainset, batch_size=args.batch_size, shuffle=True, num_workers=2
+        )
+        testset = torchvision.datasets.FashionMNIST(
+            root="./data/FashionMNIST", train=False, download=True, transform=transform
+        )
+        testloader = torch.utils.data.DataLoader(
+            testset, batch_size=args.batch_size, shuffle=False, num_workers=2
+        )
+    else:
+        raise ValueError("Dataset not implemented")
+
+    filename = (
+        "%s_" % args.dataset + "batch%d_" % args.batch_size + "mid%d_" % args.latent_dim
+    )
+
+    generator = Generator(100).to(device)
+    generator.load_state_dict(
         torch.load("models/generator.pt", map_location=device), strict=False
     )
 
-    for epoch in range(20):
-        print("Beginning training at epoch %d..." % epoch)
-        for i in range(100000):
+    loss_train_arr_g = []
+    loss_test_arr_g = []
+    for epoch in range(1, args.epochs + 1):
+        loss_train_g = train(generator, trainloader)
+        loss_train_arr_g.append(loss_train_g)
+        loss_test_g = test(generator, testloader, filename, epoch)
+        loss_test_arr_g.append(loss_test_g)
+    # Save the model
+    torch.save(generator.state_dict(), "generator.pt")
 
-            G.train()
-            # toggle_grad(G, True)
-            optim.zero_grad()
-
-            k = 100
-            r = 10  # accumulate gradients for r=10 mini-batches
-            latent_dim = 100
-            with torch.cuda.amp.autocast():
-                for j in range(r):
-                    G_z = (torch.randn(r, latent_dim, 1, 1, device=device) + 1) / 2
-
-                    fid = fastprefid(
-                        G_z.cuda(),
-                        mu_gpu,
-                        sigma_gpu,
-                        batch_size=torch.ones(1).requires_grad_(True) * 10,
-                        gradient_checkpointing=False,
-                    )
-                    fid_ = fid / fid.detach().data.clone() / r
-                    fid_.backward()
-                    torch.cuda.empty_cache()
-                    print("\r[%-5i %-2i] %-4f" % (i, j, fid.item()), end="")
-
-            optim.step()
-            optim.zero_grad()
-
-            if (i < 100) or (i % 10 == 0):
-                with torch.no_grad():
-                    with torch.cuda.amp.autocast():
-                        fixed = G_z[:64]
-                        img = torchvision.utils.make_grid(fixed.detach().cpu())
-                        torchvision.utils.save_image(
-                            img, "samples/%d_%d.png" % (epoch, i)
-                        )
+    # create a plot of the loss
+    plt.plot(loss_train_arr_g, label="train_g")
+    plt.plot(loss_test_arr_g, label="test_g")
+    plt.xlabel("Epoch")
+    plt.ylabel("fid loss")
+    plt.legend()
+    plt.savefig("fid_loss.png")
 
 
 if __name__ == "__main__":
-    train()
+    parser = argparse.ArgumentParser("")
+    parser.add_argument(
+        "--dataset", help="dataset to be modeled.", type=str, default="mnist"
+    )
+    parser.add_argument(
+        "--batch_size", help="number of images in a mini-batch.", type=int, default=64
+    )
+    parser.add_argument(
+        "--epochs", help="maximum number of iterations.", type=int, default=20
+    )
+    parser.add_argument(
+        "--sample_size", help="number of images to generate.", type=int, default=64
+    )
+
+    parser.add_argument("--latent-dim", help=".", type=int, default=100)
+    parser.add_argument(
+        "--lr", help="initial learning rate.", type=float, default=0.0002
+    )
+
+    args = parser.parse_args()
+    main(args)
