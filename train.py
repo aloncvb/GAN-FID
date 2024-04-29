@@ -16,18 +16,32 @@ from diff_fid import inception_model, get_activation_statistics, frechet_distanc
 gradient_clip = 5.0
 
 
+def get_reward(d_loss, old_fid, new_fid):
+    # Reward based on improving FID score and fooling the discriminator
+    fid_reward = old_fid - new_fid  # Positive if FID improved
+    adversarial_reward = -d_loss  # Higher if discriminator is more fooled
+    return fid_reward + adversarial_reward
+
+
+def policy_update(optim_g, reward):
+    loss = -reward.mean()  # Maximize reward; equivalent to minimizing negative reward
+    optim_g.zero_grad()
+
+
 def train(
     dcgan: DCGAN,
     trainloader: DataLoader,
     optimizer_d: Adam,
     optimizer_g: Adam,
     fast_fid: FastFID,
+    learning_way="fid",
 ):
     dcgan.train()  # set to training mode
 
     total_loss_d = 0
     total_loss_g = 0
     batch_idx = 0
+    old_fid = float("inf")
     for batch, _ in trainloader:
         data = batch.to(dcgan.device)
         optimizer_d.zero_grad()
@@ -48,6 +62,29 @@ def train(
         results = dcgan.label(fake_images)
         loss_g = dcgan.calculate_generator_loss(results)
         if batch_idx % 10 == 0:
+            if learning_way == "lr":
+                real_mu, real_sigma = get_activation_statistics(
+                    data,
+                    inception_model,
+                    batch_size=batch_size,
+                    device=dcgan.device,
+                )
+                fake_images_fid = dcgan.generate_fake(
+                    batch_size
+                )  # 1000 for stable score
+                # use fid for better training
+                fake_mu, fake_sigma = get_activation_statistics(
+                    fake_images_fid,
+                    inception_model,
+                    batch_size=batch_size,
+                    device=dcgan.device,
+                )
+
+                new_fid = frechet_distance(real_mu, real_sigma, fake_mu, fake_sigma)
+                reward = torch.tensor([get_reward(loss_d, old_fid, new_fid)])
+                policy_update(optimizer_g, reward)
+                old_fid = new_fid
+
             real_mu, real_sigma = get_activation_statistics(
                 data,
                 inception_model,
@@ -65,7 +102,7 @@ def train(
             fid_loss = frechet_distance(real_mu, real_sigma, fake_mu, fake_sigma)
             # * loss_g # loss_g is there to scale loss in the range of generator loss
             limit_loss = fid_loss
-            loss_g = loss_g + limit_loss
+            loss_g = limit_loss
         loss_g.backward()
         for param in dcgan.generator.parameters():
             param.grad.data.clamp_(-gradient_clip, gradient_clip)
