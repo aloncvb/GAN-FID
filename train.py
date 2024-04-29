@@ -51,8 +51,7 @@ def train(
         fake_label = dcgan.label_fake(batch_size=batch_size)
         loss_d = dcgan.calculate_dicriminator_loss(real_label, fake_label)
         loss_d.backward()
-        for param in dcgan.discriminator.parameters():
-            param.grad.data.clamp_(-gradient_clip, gradient_clip)
+
         total_loss_d += loss_d.item()
         optimizer_d.step()
 
@@ -96,8 +95,6 @@ def train(
             limit_loss = fid_loss
             loss_g = limit_loss
         loss_g.backward()
-        for param in dcgan.generator.parameters():
-            param.grad.data.clamp_(-gradient_clip, gradient_clip)
 
         total_loss_g += loss_g.item()
         optimizer_g.step()
