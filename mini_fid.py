@@ -126,8 +126,7 @@ def train(generator: Generator, trainloader: DataLoader):
         )
         fid_loss = frechet_distance(real_mu, real_sigma, fake_mu, fake_sigma)
         # * loss_g # loss_g is there to scale loss in the range of generator loss
-        limit_loss = fid_loss
-        loss_g = limit_loss
+        loss_g = fid_loss
         loss_g.backward()
 
         total_loss_g += loss_g.item()
