@@ -1,6 +1,7 @@
 import torch
 from torchvision.models import inception_v3
 import torch.nn.functional as F
+import torch.nn as nn
 
 
 def inception_feature_extractor():
@@ -16,9 +17,8 @@ inception_model = inception_feature_extractor()
 def get_activation_statistics(images, device="cuda"):
     inception_model.to(device)
     inception_model.eval()
-    upsizing_images = F.interpolate(
-        images, size=(299, 299), mode="bilinear", align_corners=False
-    )
+    up = nn.Upsample((299, 299), mode="bilinear")
+    upsizing_images = up(images)
 
     with torch.no_grad():
         pred = inception_model(upsizing_images)
