@@ -91,7 +91,7 @@ def train(
                 batch_size=batch_size,
                 device=dcgan.device,
             )
-            fake_images_fid = dcgan.generate_fake(batch_size)  # 1000 for stable score
+            fake_images_fid = dcgan.generate_fake(1000)  # 1000 for stable score
             # use fid for better training
             fake_mu, fake_sigma = get_activation_statistics(
                 fake_images_fid,
