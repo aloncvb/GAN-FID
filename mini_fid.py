@@ -244,6 +244,8 @@ def main(args):
     for epoch in range(1, args.epochs + 1):
         loss_train_g = train(generator, trainloader, optim)
         loss_train_arr_g.append(loss_train_g)
+        # print train loss:
+        print("Epoch: {} Train set: Average loss_g: {:.4f}".format(epoch, loss_train_g))
         loss_test_g = test(generator, testloader, filename, epoch)
         loss_test_arr_g.append(loss_test_g)
     # Save the model
