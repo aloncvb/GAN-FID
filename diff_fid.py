@@ -60,4 +60,4 @@ def frechet_distance(mu1, sigma1, mu2, sigma2, eps=1e-6) -> torch.Tensor:
         + torch.trace(sigma2)
         - 2 * torch.trace(covmean)
     )
-    return dist
+    return torch.Tensor(dist, requires_grad=True)
