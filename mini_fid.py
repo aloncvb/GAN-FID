@@ -104,8 +104,7 @@ def toggle_grad(model, on_or_off):
                     p.requires_grad = False
 
 
-def train(generator: Generator, trainloader: DataLoader):
-    optim = Adam(generator.parameters(), lr=0.0001, betas=(0.0, 0.99))
+def train(generator: Generator, trainloader: DataLoader, optim: Adam):
 
     total_loss_g = 0
     batch_idx = 0
@@ -152,7 +151,6 @@ def test(
         )
 
         total_loss_g = 0
-        total_loss_d = 0
         batch_idx = 0
         for batch, _ in testloader:
             data = batch.to(device)
@@ -176,11 +174,6 @@ def test(
 
             total_loss_g += loss_g.item()
             batch_idx += 1
-        print(
-            "Epoch: {} Test set: Average loss_d: {:.4f}".format(
-                epoch, total_loss_d / batch_idx
-            )
-        )
         print(
             "Epoch: {} Test set: Average loss_g: {:.4f}".format(
                 epoch, total_loss_g / batch_idx
@@ -244,11 +237,12 @@ def main(args):
     generator.load_state_dict(
         torch.load("models/generator.pt", map_location=device), strict=False
     )
+    optim = Adam(generator.parameters(), lr=0.001)
 
     loss_train_arr_g = []
     loss_test_arr_g = []
     for epoch in range(1, args.epochs + 1):
-        loss_train_g = train(generator, trainloader)
+        loss_train_g = train(generator, trainloader, optim)
         loss_train_arr_g.append(loss_train_g)
         loss_test_g = test(generator, testloader, filename, epoch)
         loss_test_arr_g.append(loss_test_g)
