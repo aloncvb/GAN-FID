@@ -116,7 +116,7 @@ def train():
         for i in range(100000):
 
             G.train()
-            toggle_grad(G, True)
+            # toggle_grad(G, True)
             optim.zero_grad()
 
             k = 100
