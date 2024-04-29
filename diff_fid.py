@@ -28,6 +28,32 @@ def get_activation_statistics(images, device="cuda"):
     return mu, sigma
 
 
+def trace_of_matrix_sqrt(C1, C2):
+    """
+    Computes using the fact that:   eig(A @ B) = eig(B @ A)
+
+    C1, C2    (d, bs)
+
+    M = C1 @ C1.T @ C2 @ C2.T
+
+    eig ( C1 @ C1.T @ C2 @ C2.T ) =
+    eig ( C1 @ (C1.T @ C2) @ C2.T ) =      O(d bs^2)
+    eig ( C1 @ ((C1.T @ C2) @ C2.T) ) =        O(d bs^2)
+    eig ( ((C1.T @ C2) @ C2.T) @ C1 ) =        O(d bs^2)
+    eig ( batch_size x batch_size  )      O(bs^3)
+
+    """
+    d, bs = C1.shape
+    assert bs <= d, (
+        "This algorithm takes O(bs^2d) time instead of O(d^3), so only use it when bs < d.\nGot bs=%i>d=%i. "
+        % (bs, d)
+    )  # it also computes wrong thing sice it returns bs eigenvalues and there are only d.
+    M = ((C1.t() @ C2) @ C2.t()) @ C1  # computed in O(d bs^2) time.    O(d^^3)
+    S = torch.svd(M, compute_uv=True)[1]  # need 'uv' for backprop.
+    S = torch.topk(S, bs - 1)[0]  # covariance matrix has rank bs-1
+    return torch.sum(torch.sqrt(S))
+
+
 def frechet_distance(mu1, sigma1, mu2, sigma2, eps=1e-6) -> torch.Tensor:
     """Calculation of the Frechet Distance between two Gaussians."""
     mu1 = mu1.to(torch.float16)
@@ -38,7 +64,7 @@ def frechet_distance(mu1, sigma1, mu2, sigma2, eps=1e-6) -> torch.Tensor:
     diff = mu1 - mu2
 
     # Product might be almost singular
-    covmean = torch.sqrt(torch.matmul(sigma1, sigma2))
+    covmean = trace_of_matrix_sqrt(sigma1, sigma2)
     if not torch.isfinite(covmean).all():
         covmean = covmean + torch.eye(sigma1.size(0)) * eps
 
