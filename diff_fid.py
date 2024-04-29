@@ -56,7 +56,7 @@ def trace_of_matrix_sqrt(C1, C2):
 
 def frechet_distance(mu1, sigma1, mu2, sigma2, eps=1e-6) -> torch.Tensor:
     """Calculation of the Frechet Distance between two Gaussians."""
-    mu1 = mu1.to(torch.float32)
+    mu1 = mu1.to(torch.float32).requires_grad_(True)
     mu2 = mu2.to(torch.float32)
     sigma1 = sigma1.to(torch.float32)
     sigma2 = sigma2.to(torch.float32)
@@ -70,4 +70,4 @@ def frechet_distance(mu1, sigma1, mu2, sigma2, eps=1e-6) -> torch.Tensor:
 
     # FID calculation
     dist = (diff @ diff) + torch.trace(sigma1) + torch.trace(sigma2) - 2 * covmean
-    return dist
+    return dist.requires_grad_(True)
