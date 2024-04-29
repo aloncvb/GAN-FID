@@ -36,14 +36,9 @@ def frechet_distance(mu1, sigma1, mu2, sigma2, eps=1e-6) -> torch.Tensor:
     sigma2 = sigma2.to(torch.float16)
 
     diff = mu1 - mu2
-    # Compute the product of covariance matrices
-    prod = sigma1 @ sigma2
 
-    # Compute the square root of the product matrix using SVD
-    U, S, V = torch.svd(prod)
-    covmean = (
-        U @ torch.diag(torch.sqrt(S)) @ V.t()
-    )  # Numerically stabilize with epsilon
+    # Product might be almost singular
+    covmean = torch.sqrt(torch.matmul(sigma1, sigma2))
     if not torch.isfinite(covmean).all():
         covmean = covmean + torch.eye(sigma1.size(0)) * eps
 
