@@ -181,7 +181,6 @@ def main(args):
             split="train",  # specify the dataset split ('train', 'valid', 'test')
             download=True,  # download the data if not already available
             transform=transform,  # apply the defined transformations
-            split="train",
         )
         trainloader = torch.utils.data.DataLoader(
             trainset, batch_size=args.batch_size, shuffle=True, num_workers=2
