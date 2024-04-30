@@ -185,19 +185,19 @@ def test(
 def main(args):
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
-    transform = transforms.Compose(
-        [
-            transforms.Resize(
-                (64),
-                interpolation=transforms.InterpolationMode.BICUBIC,  # size_that_worked = 64
-            ),
-            transforms.Grayscale(num_output_channels=3),  # Convert to RGB
-            transforms.ToTensor(),
-            transforms.Normalize(mean=(0.5, 0.5, 0.5), std=(0.5, 0.5, 0.5)),
-        ]
-    )
-
     if args.dataset == "mnist":
+        transform = transforms.Compose(
+            [
+                transforms.Resize(
+                    (64),
+                    interpolation=transforms.InterpolationMode.BICUBIC,  # size_that_worked = 64
+                ),
+                transforms.Grayscale(num_output_channels=3),  # Convert to RGB
+                transforms.ToTensor(),
+                transforms.Normalize(mean=(0.5, 0.5, 0.5), std=(0.5, 0.5, 0.5)),
+            ]
+        )
+
         trainset = torchvision.datasets.MNIST(
             root="./data/MNIST", train=True, download=True, transform=transform
         )
@@ -210,9 +210,20 @@ def main(args):
         testloader = torch.utils.data.DataLoader(
             testset, batch_size=args.batch_size, shuffle=False, num_workers=2
         )
-    elif args.dataset == "fashion-mnist":
-        trainset = torchvision.datasets.FashionMNIST(
-            root="~/torch/data/FashionMNIST",
+    elif args.dataset == "cifar":
+        transform = transforms.Compose(
+            [
+                transforms.Resize(
+                    (64),
+                    interpolation=transforms.InterpolationMode.BICUBIC,  # size_that_worked = 64
+                ),
+                transforms.ToTensor(),
+                transforms.Normalize(mean=(0.5, 0.5, 0.5), std=(0.5, 0.5, 0.5)),
+            ]
+        )
+
+        trainset = torchvision.datasets.CIFAR10(
+            root="~/torch/data/Cifar10",
             train=True,
             download=True,
             transform=transform,
@@ -220,8 +231,8 @@ def main(args):
         trainloader = torch.utils.data.DataLoader(
             trainset, batch_size=args.batch_size, shuffle=True, num_workers=2
         )
-        testset = torchvision.datasets.FashionMNIST(
-            root="./data/FashionMNIST", train=False, download=True, transform=transform
+        testset = torchvision.datasets.CIFAR10(
+            root="./data/Cifar10", train=False, download=True, transform=transform
         )
         testloader = torch.utils.data.DataLoader(
             testset, batch_size=args.batch_size, shuffle=False, num_workers=2
