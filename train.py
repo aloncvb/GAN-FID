@@ -31,8 +31,7 @@ def train(
     trainloader: DataLoader,
     optimizer_d: Adam,
     optimizer_g: Adam,
-    fast_fid: FastFID,
-    learning_way="fid",
+    learning_way: str = "reg",
 ):
     dcgan.train()  # set to training mode
 
@@ -58,7 +57,7 @@ def train(
         fake_images = dcgan.generate_fake(batch_size)
         results = dcgan.label(fake_images)
         loss_g = dcgan.calculate_generator_loss(results)
-        if batch_idx % 1 == 0:
+        if batch_idx % 10 == 0:
             if learning_way == "lr":
                 real_mu, real_sigma = get_activation_statistics(
                     data,
@@ -77,21 +76,23 @@ def train(
                 reward = torch.tensor([get_reward(loss_d, old_fid, new_fid)])
                 policy_update(optimizer_g, reward)
                 old_fid = new_fid
-
-            real_mu, real_sigma = get_activation_statistics(
-                data,
-                device=dcgan.device,
-            )
-            fake_images_fid = dcgan.generate_fake(batch_size)  # 1000 for stable score
-            # use fid for better training
-            fake_mu, fake_sigma = get_activation_statistics(
-                fake_images_fid,
-                device=dcgan.device,
-            )
-            fid_loss = frechet_distance(real_mu, real_sigma, fake_mu, fake_sigma)
-            # * loss_g # loss_g is there to scale loss in the range of generator loss
-            limit_loss = fid_loss
-            loss_g = limit_loss
+            elif learning_way == "fid":
+                real_mu, real_sigma = get_activation_statistics(
+                    data,
+                    device=dcgan.device,
+                )
+                fake_images_fid = dcgan.generate_fake(
+                    batch_size
+                )  # 1000 for stable score
+                # use fid for better training
+                fake_mu, fake_sigma = get_activation_statistics(
+                    fake_images_fid,
+                    device=dcgan.device,
+                )
+                fid_loss = frechet_distance(real_mu, real_sigma, fake_mu, fake_sigma)
+                # * loss_g # loss_g is there to scale loss in the range of generator loss
+                limit_loss = fid_loss
+                loss_g = 0.5 * loss_g + 0.5 * limit_loss
         loss_g.backward()
 
         total_loss_g += loss_g.item()
@@ -220,7 +221,7 @@ def main(args):
             trainloader,
             optimizer_d=optimizer_d,
             optimizer_g=optimizer_g,
-            fast_fid=fast_fid,
+            learning_way=args.lw,
         )
         loss_train_arr_d.append(loss_train_d)
         loss_train_arr_g.append(loss_train_g)
@@ -262,6 +263,8 @@ if __name__ == "__main__":
     parser.add_argument(
         "--lr", help="initial learning rate.", type=float, default=0.0002
     )
+
+    parser.add_argument("--lw", help="way of learning.", type=float, default="reg")
 
     args = parser.parse_args()
     main(args)
