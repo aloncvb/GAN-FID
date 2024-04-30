@@ -264,7 +264,7 @@ if __name__ == "__main__":
         "--lr", help="initial learning rate.", type=float, default=0.0002
     )
 
-    parser.add_argument("--lw", help="way of learning.", type=float, default="reg")
+    parser.add_argument("--lw", help="way of learning.", type=str, default="reg")
 
     args = parser.parse_args()
     main(args)
