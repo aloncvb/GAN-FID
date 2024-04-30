@@ -143,19 +143,19 @@ def test(
 def main(args):
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
-    transform = transforms.Compose(
-        [
-            transforms.Resize(
-                (64),
-                interpolation=transforms.InterpolationMode.BICUBIC,  # size_that_worked = 64
-            ),
-            transforms.Grayscale(num_output_channels=3),  # Convert to RGB
-            transforms.ToTensor(),
-            transforms.Normalize(mean=(0.5, 0.5, 0.5), std=(0.5, 0.5, 0.5)),
-        ]
-    )
-
     if args.dataset == "mnist":
+        transform = transforms.Compose(
+            [
+                transforms.Resize(
+                    (64),
+                    interpolation=transforms.InterpolationMode.BICUBIC,  # size_that_worked = 64
+                ),
+                transforms.Grayscale(num_output_channels=3),  # Convert to RGB
+                transforms.ToTensor(),
+                transforms.Normalize(mean=(0.5, 0.5, 0.5), std=(0.5, 0.5, 0.5)),
+            ]
+        )
+
         trainset = torchvision.datasets.MNIST(
             root="./data/MNIST", train=True, download=True, transform=transform
         )
@@ -168,18 +168,26 @@ def main(args):
         testloader = torch.utils.data.DataLoader(
             testset, batch_size=args.batch_size, shuffle=False, num_workers=2
         )
-    elif args.dataset == "fashion-mnist":
-        trainset = torchvision.datasets.FashionMNIST(
-            root="~/torch/data/FashionMNIST",
-            train=True,
-            download=True,
-            transform=transform,
+    elif args.dataset == "celeba":
+        transform = transforms.Compose(
+            [
+                transforms.ToTensor(),
+                transforms.Normalize(mean=(0.5, 0.5, 0.5), std=(0.5, 0.5, 0.5)),
+            ]
+        )
+
+        trainset = torchvision.datasets.CelebA(
+            root="./data/CelebA",  # specify the root directory where the data will be saved
+            split="train",  # specify the dataset split ('train', 'valid', 'test')
+            download=True,  # download the data if not already available
+            transform=transform,  # apply the defined transformations
+            split="train",
         )
         trainloader = torch.utils.data.DataLoader(
             trainset, batch_size=args.batch_size, shuffle=True, num_workers=2
         )
-        testset = torchvision.datasets.FashionMNIST(
-            root="./data/FashionMNIST", train=False, download=True, transform=transform
+        testset = torchvision.datasets.CelebA(
+            root="./data/CelebA", download=True, transform=transform, split="test"
         )
         testloader = torch.utils.data.DataLoader(
             testset, batch_size=args.batch_size, shuffle=False, num_workers=2
