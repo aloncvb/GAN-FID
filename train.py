@@ -176,17 +176,17 @@ def main(args):
             ]
         )
 
-        trainset = torchvision.datasets.CelebA(
-            root="./data/CelebA",  # specify the root directory where the data will be saved
-            split="train",  # specify the dataset split ('train', 'valid', 'test')
+        trainset = torchvision.datasets.CIFAR10(
+            root="./data/Cifar10",  # specify the root directory where the data will be saved
+            train=True,  # specify the dataset split ('train', 'valid', 'test')
             download=True,  # download the data if not already available
             transform=transform,  # apply the defined transformations
         )
         trainloader = torch.utils.data.DataLoader(
             trainset, batch_size=args.batch_size, shuffle=True, num_workers=2
         )
-        testset = torchvision.datasets.CelebA(
-            root="./data/CelebA", download=True, transform=transform, split="test"
+        testset = torchvision.datasets.CIFAR10(
+            root="./data/Cifar10", download=True, transform=transform, train=False
         )
         testloader = torch.utils.data.DataLoader(
             testset, batch_size=args.batch_size, shuffle=False, num_workers=2
