@@ -159,3 +159,5 @@ mnist_images/*
 generated_mnist_images/*
 samples/*
 generated_mnist_images_first/*
+cifar_images/*
+generated_cifar_images/*
