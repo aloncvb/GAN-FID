@@ -57,7 +57,7 @@ def train(
         fake_images = dcgan.generate_fake(batch_size)
         results = dcgan.label(fake_images)
         loss_g = dcgan.calculate_generator_loss(results)
-        if batch_idx % 10 == 0:
+        if batch_idx % 1 == 0:
             if learning_way == "lr":
                 real_mu, real_sigma = get_activation_statistics(
                     data,
@@ -169,7 +169,7 @@ def main(args):
         testloader = torch.utils.data.DataLoader(
             testset, batch_size=args.batch_size, shuffle=False, num_workers=2
         )
-    elif args.dataset == "celeba":
+    elif args.dataset == "cifar":
         transform = transforms.Compose(
             [
                 transforms.Resize(
