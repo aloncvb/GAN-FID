@@ -76,7 +76,8 @@ def get_activation_statistics(images, device="cuda"):
 
     with torch.no_grad():
         pred = inception_model(upsizing_images)
-
+    print(pred)
+    print(pred[0].shape, pred[1].shape)
     mu = torch.mean(pred, dim=0)
     sigma = torch.cov(pred)
     return mu, sigma
