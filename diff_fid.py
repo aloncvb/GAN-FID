@@ -78,13 +78,9 @@ def get_activation_statistics(images, device="cuda"):
     # with torch.no_grad():
     # pred = inception_model(upsizing_images)
 
-    act1 = inception_model(upsizing_images)
-    print(act1)
-    print(type(act1))  # This should print <class 'tuple'>
-    print(len(act1))  # This will tell you how many elements are in the tuple
-
+    act1 = inception_model(upsizing_images)[0]
+    act1.t()
     d, bs = act1.shape
-    print(type(d), print(type(bs)))
     all_ones = torch.ones((1, bs)).cuda()
     mu1 = torch.mean(act1, axis=1).view(d, 1)
     S1 = np.sqrt(1 / (bs - 1)) * (act1 - mu1 @ all_ones)
