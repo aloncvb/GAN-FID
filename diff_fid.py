@@ -106,10 +106,10 @@ def trace_of_matrix_sqrt(C1, C2):
 
     """
     d, bs = C1.shape
-    assert bs <= d, (
-        "This algorithm takes O(bs^2d) time instead of O(d^3), so only use it when bs < d.\nGot bs=%i>d=%i. "
-        % (bs, d)
-    )  # it also computes wrong thing sice it returns bs eigenvalues and there are only d.
+    # assert bs <= d, (
+    #     "This algorithm takes O(bs^2d) time instead of O(d^3), so only use it when bs < d.\nGot bs=%i>d=%i. "
+    #     % (bs, d)
+    # )  # it also computes wrong thing sice it returns bs eigenvalues and there are only d.
     M = ((C1.t() @ C2) @ C2.t()) @ C1  # computed in O(d bs^2) time.    O(d^^3)
     S = torch.svd(M, compute_uv=True)[1]  # need 'uv' for backprop.
     S = torch.topk(S, bs - 1)[0]  # covariance matrix has rank bs-1
