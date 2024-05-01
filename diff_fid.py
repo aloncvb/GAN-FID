@@ -56,9 +56,6 @@ class WrapInception(nn.Module):
         # END CHANGE.
 
         pool = torch.mean(x.view(x.size(0), x.size(1), -1), 2).to(dtype=torch.float32)
-        print("pool dtype:", pool.dtype)
-        print("fc weights dtype:", self.net.fc.weight.dtype)
-        self.net.fc.weight = self.net.fc.weight.to(dtype=torch.float32)
         logits = self.net.fc(F.dropout(pool, training=False).view(pool.size(0), -1))
         return pool, logits
 
