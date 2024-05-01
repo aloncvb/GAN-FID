@@ -79,6 +79,9 @@ def get_activation_statistics(images, device="cuda"):
     # pred = inception_model(upsizing_images)
 
     act1 = inception_model(upsizing_images)
+    print(act1)
+    print(type(act1))  # This should print <class 'tuple'>
+    print(len(act1))  # This will tell you how many elements are in the tuple
     act1 = act1.t()
 
     d, bs = act1.shape
