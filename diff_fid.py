@@ -123,7 +123,7 @@ def frechet_distance(mu1, sigma1, mu2, sigma2, eps=1e-6) -> torch.Tensor:
     sigma1 = sigma1.to(torch.float32)
     sigma2 = sigma2.to(torch.float32)
 
-    diff = mu1 - mu2
+    diff = mu1.view(2048) - mu2.view(2048)
 
     # Product might be almost singular
     covmean = trace_of_matrix_sqrt(sigma1, sigma2)
