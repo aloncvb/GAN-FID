@@ -75,19 +75,19 @@ def get_activation_statistics(images, device="cuda"):
     up = nn.Upsample((299, 299), mode="bilinear")
     upsizing_images = up(images)
 
-    # with torch.no_grad():
-    # pred = inception_model(upsizing_images)
-    act1 = inception_model(upsizing_images)[0]
-    act1.t()
-    d, bs = act1.shape
-    all_ones = torch.ones((1, bs)).cuda()
-    mu1 = torch.mean(act1, axis=1).view(d, 1)
-    S1 = np.sqrt(1 / (bs - 1)) * (act1 - mu1 @ all_ones)
-    return mu1, S1
+    with torch.no_grad():
+        pred = inception_model(upsizing_images)[0]
+    # act1 = inception_model(upsizing_images)[0]
+    # act1.t()
+    # d, bs = act1.shape
+    # all_ones = torch.ones((1, bs)).cuda()
+    # mu1 = torch.mean(act1, axis=1).view(d, 1)
+    # S1 = np.sqrt(1 / (bs - 1)) * (act1 - mu1 @ all_ones)
+    # return mu1, S1
 
-    # mu = torch.mean(pred, dim=0)
-    # sigma = torch.cov(pred)
-    # return mu, sigma
+    mu = torch.mean(pred, dim=0)
+    sigma = torch.cov(pred)
+    return mu, sigma
 
 
 def trace_of_matrix_sqrt(C1, C2):
@@ -106,10 +106,10 @@ def trace_of_matrix_sqrt(C1, C2):
 
     """
     d, bs = C1.shape
-    # assert bs <= d, (
-    #     "This algorithm takes O(bs^2d) time instead of O(d^3), so only use it when bs < d.\nGot bs=%i>d=%i. "
-    #     % (bs, d)
-    # )  # it also computes wrong thing sice it returns bs eigenvalues and there are only d.
+    assert bs <= d, (
+        "This algorithm takes O(bs^2d) time instead of O(d^3), so only use it when bs < d.\nGot bs=%i>d=%i. "
+        % (bs, d)
+    )  # it also computes wrong thing sice it returns bs eigenvalues and there are only d.
     M = ((C1.t() @ C2) @ C2.t()) @ C1  # computed in O(d bs^2) time.    O(d^^3)
     S = torch.svd(M, compute_uv=True)[1]  # need 'uv' for backprop.
     S = torch.topk(S, bs - 1)[0]  # covariance matrix has rank bs-1
