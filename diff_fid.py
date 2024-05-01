@@ -4,6 +4,7 @@ import torch.nn.functional as F
 import torch.nn as nn
 from torch.nn import Parameter as P
 from torch.utils.checkpoint import checkpoint
+import numpy as np
 
 
 class WrapInception(nn.Module):
@@ -74,13 +75,21 @@ def get_activation_statistics(images, device="cuda"):
     up = nn.Upsample((299, 299), mode="bilinear")
     upsizing_images = up(images)
 
-    with torch.no_grad():
-        pred = inception_model(upsizing_images)
-    print(pred)
-    print(pred[0].shape, pred[1].shape)
-    mu = torch.mean(pred, dim=0)
-    sigma = torch.cov(pred)
-    return mu, sigma
+    # with torch.no_grad():
+    # pred = inception_model(upsizing_images)
+
+    act1 = inception_model(upsizing_images)
+    act1 = act1.t()
+
+    d, bs = act1.shape
+    all_ones = torch.ones((1, bs)).cuda()
+    mu1 = torch.mean(act1, axis=1).view(d, 1)
+    S1 = np.sqrt(1 / (bs - 1)) * (act1 - mu1 @ all_ones)
+    return mu1, S1
+
+    # mu = torch.mean(pred, dim=0)
+    # sigma = torch.cov(pred)
+    # return mu, sigma
 
 
 def trace_of_matrix_sqrt(C1, C2):
