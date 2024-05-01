@@ -77,8 +77,7 @@ def get_activation_statistics(images, device="cuda"):
 
     # with torch.no_grad():
     # pred = inception_model(upsizing_images)
-    act1 = torch.zeros((len(images), 2048)).cuda()
-    act1[0] = inception_model(upsizing_images)[0]
+    act1 = inception_model(upsizing_images)[0]
     act1.t()
     d, bs = act1.shape
     all_ones = torch.ones((1, bs)).cuda()
