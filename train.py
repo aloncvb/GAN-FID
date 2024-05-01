@@ -10,7 +10,6 @@ from torchvision import transforms
 from torch.utils.data import DataLoader
 from torch.optim import Adam
 from dcgan import DCGAN
-from fast_fid import FastFID
 from diff_fid import get_activation_statistics, frechet_distance
 
 
@@ -101,9 +100,7 @@ def train(
     return total_loss_d / batch_idx, total_loss_g / batch_idx
 
 
-def test(
-    dcgan: DCGAN, testloader: DataLoader, filename: str, epoch: int, fast_fid: FastFID
-):
+def test(dcgan: DCGAN, testloader: DataLoader, filename: str, epoch: int):
     dcgan.eval()  # set to inference mode
     with torch.no_grad():
         samples = dcgan.generate_fake(100)
@@ -204,7 +201,6 @@ def main(args):
     )
 
     dcgan = DCGAN(latent_dim=args.latent_dim, device=device)
-    fast_fid = FastFID(device=device)
     optimizer_d = torch.optim.Adam(
         dcgan.discriminator.parameters(), lr=args.lr, betas=(0.5, 0.999)
     )
@@ -225,9 +221,7 @@ def main(args):
         )
         loss_train_arr_d.append(loss_train_d)
         loss_train_arr_g.append(loss_train_g)
-        loss_test_d, loss_test_g = test(
-            dcgan, testloader, filename, epoch, fast_fid=fast_fid
-        )
+        loss_test_d, loss_test_g = test(dcgan, testloader, filename, epoch)
         loss_test_arr_d.append(loss_test_d)
         loss_test_arr_g.append(loss_test_g)
     # Save the model
