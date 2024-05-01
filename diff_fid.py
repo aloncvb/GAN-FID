@@ -55,7 +55,10 @@ class WrapInception(nn.Module):
         x = checkpoint(part2, x)
         # END CHANGE.
 
-        pool = torch.mean(x.view(x.size(0), x.size(1), -1), 2)
+        pool = torch.mean(x.view(x.size(0), x.size(1), -1), 2).to(dtype=torch.float32)
+        print("pool dtype:", pool.dtype)
+        print("fc weights dtype:", self.net.fc.weight.dtype)
+        self.net.fc.weight = self.net.fc.weight.to(dtype=torch.float32)
         logits = self.net.fc(F.dropout(pool, training=False).view(pool.size(0), -1))
         return pool, logits
 
@@ -110,10 +113,10 @@ def trace_of_matrix_sqrt(C1, C2):
 
 def frechet_distance(mu1, sigma1, mu2, sigma2, eps=1e-6) -> torch.Tensor:
     """Calculation of the Frechet Distance between two Gaussians."""
-    mu1 = mu1.to(torch.float32).requires_grad_(True)
-    mu2 = mu2.to(torch.float32)
-    sigma1 = sigma1.to(torch.float32)
-    sigma2 = sigma2.to(torch.float32)
+    mu1 = mu1.requires_grad_(True)
+    mu2 = mu2
+    sigma1 = sigma1
+    sigma2 = sigma2
 
     diff = mu1 - mu2
 
