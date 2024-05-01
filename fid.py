@@ -12,6 +12,9 @@ import os
 from PIL import Image
 
 
+device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+
+
 def inception_score(imgs, batch_size=64, splits=1):
     """Computes the inception score of the generated images."""
     N = len(imgs)
@@ -103,8 +106,7 @@ class ImageDataset(Dataset):
 
 if __name__ == "__main__":
 
-    device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-    paths = ["mnist_images", "generated_mnist_images"]
+    paths = ["cifar_images", "generated_cifar_images"]
 
     # Calculate FID Score
     # transform = transforms.Compose(
