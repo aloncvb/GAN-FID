@@ -16,7 +16,6 @@ inception_model = inception_feature_extractor()
 
 
 def calculate_activation_statistics(images1, batch_size, inception=None):
-    batch_size = int(batch_size.detach().cpu().numpy()[0])
     num_images = images1.shape[0]
     assert (
         num_images % batch_size == 0
@@ -59,6 +58,7 @@ def calc_images_stats():
 
     # Save 'mu' and 'sigma' to a .npz file
     np.savez("cifar_inception.npz", mu=mu, sigma=sigma)
+    print(mu.shape, sigma.shape)
 
 
 # Specify the directory to save the images
