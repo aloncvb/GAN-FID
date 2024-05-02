@@ -104,7 +104,9 @@ def trace_of_matrix_sqrt(C1, C2):
     M = C1.t() @ C2 @ C1
     I = torch.eye(M.size(0), device=M.device, dtype=M.dtype)
     M_reg = M + eps * I
-    S = torch.svd(M_reg.half(), compute_uv=True)[1]  # PSD => singular=eigen
+    if torch.any(torch.isnan(M_reg)) or torch.any(torch.isinf(M)):
+        print("Matrix contains NaN or Inf values.")
+    S = torch.svd(M_reg.double(), compute_uv=True)[1]  # PSD => singular=eigen
     S = S.half()
     S = torch.topk(S, bs - 1)[0]
     return torch.sum(torch.sqrt(S))
