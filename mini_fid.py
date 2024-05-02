@@ -202,7 +202,7 @@ if __name__ == "__main__":
 
     parser.add_argument("--latent-dim", help=".", type=int, default=100)
     parser.add_argument(
-        "--lr", help="initial learning rate.", type=float, default=0.00002
+        "--lr", help="initial learning rate.", type=float, default=0.000002
     )
 
     args = parser.parse_args()
