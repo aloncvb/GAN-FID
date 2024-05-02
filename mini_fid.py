@@ -305,7 +305,7 @@ def main(args):
     generator.load_state_dict(
         torch.load("models/generator.pt", map_location=device), strict=False
     )
-    optim = Adam(generator.parameters(), lr=1e-4)
+    optim = Adam(generator.parameters(), lr=1e-4, betas=(0.5, 0.999))
 
     loss_train_arr_g = []
     loss_test_arr_g = []
