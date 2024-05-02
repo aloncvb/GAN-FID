@@ -107,7 +107,6 @@ def trace_of_matrix_sqrt(C1, C2):
 
 
 def calculate_activation_statistics(images1, batch_size):
-    batch_size = int(batch_size.detach().cpu().numpy()[0])
     num_images = images1.shape[0]
     assert (
         num_images % batch_size == 0
