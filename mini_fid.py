@@ -162,11 +162,15 @@ def toggle_grad(model, on_or_off):
                     p.requires_grad = False
 
 
-def train(generator: Generator, trainloader: DataLoader, optim: Adam):
+def train(
+    generator: Generator,
+    trainloader: DataLoader,
+    optim: Adam,
+):
     generator.train()
     total_loss_g = 0
     batch_idx = 0
-    noise = torch.randn(batch_size, 100, 1, 1, device=device)
+    noise = torch.randn(trainloader.batch_size, 100, 1, 1, device=device)
     for batch, _ in trainloader:
         data = batch.to(device)
         optim.zero_grad()
