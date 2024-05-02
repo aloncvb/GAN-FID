@@ -184,7 +184,7 @@ def train(generator: Generator, trainloader: DataLoader, optim: Adam):
             device=device,
         )
         fid_loss = frechet_distance(real_mu, real_sigma, fake_mu, fake_sigma)
-        loss_g = fid_loss
+        loss_g = -fid_loss
         loss_g.backward()
 
         total_loss_g += loss_g.item()
