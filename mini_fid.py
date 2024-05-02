@@ -1,12 +1,7 @@
 from dcgan import Generator
 import torch
-from torchvision.models import inception_v3
-import time
-import numpy as np
-import torch.nn as nn
 import argparse
 from torchvision import transforms
-import torch.nn.functional as F
 
 import matplotlib.pyplot as plt
 import torch.utils
@@ -14,9 +9,7 @@ import torch.utils.data
 import torch, torchvision
 from torch.utils.data import DataLoader
 from torch.optim import Adam
-from diff_fid import inception_model, get_activation_statistics, frechet_distance
-from torch.nn import Parameter as P
-from torch.utils.checkpoint import checkpoint
+from diff_fid import get_activation_statistics, frechet_distance
 
 
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
