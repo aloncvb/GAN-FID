@@ -166,6 +166,7 @@ def train(generator: Generator, trainloader: DataLoader, optim: Adam):
     generator.train()
     total_loss_g = 0
     batch_idx = 0
+    noise = torch.randn(batch_size, 100, 1, 1, device=device)
     for batch, _ in trainloader:
         data = batch.to(device)
         optim.zero_grad()
@@ -175,9 +176,7 @@ def train(generator: Generator, trainloader: DataLoader, optim: Adam):
             data,
             device=device,
         )
-        fake_images_fid = generator(
-            torch.randn(batch_size, 100, 1, 1, device=device)
-        )  # 1000 for stable score
+        fake_images_fid = generator(noise)
         # use fid for better training
         fake_mu, fake_sigma = get_activation_statistics(
             fake_images_fid,
