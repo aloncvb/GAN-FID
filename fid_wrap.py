@@ -99,12 +99,13 @@ def compute_trace(S):
 
 
 def trace_of_matrix_sqrt(C1, C2):
-    eps = 1e-6
+    eps = 1e-5
     d, bs = C1.shape
     M = C1.t() @ C2 @ C1
     I = torch.eye(M.size(0), device=M.device, dtype=M.dtype)
     M_reg = M + eps * I
-    S = torch.svd(M_reg.float(), compute_uv=True)[1].half()  # PSD => singular=eigen
+    S = torch.svd(M_reg.half(), compute_uv=True)[1]  # PSD => singular=eigen
+    S = S.half()
     S = torch.topk(S, bs - 1)[0]
     return torch.sum(torch.sqrt(S))
 
