@@ -174,7 +174,8 @@ def train(
     for batch, _ in trainloader:
         data = batch.to(device)
         optim.zero_grad()
-        batch_size = data.size()[0]
+        if trainloader.batch_size != data.size()[0]:
+            noise = noise[: data.size()[0]]
 
         real_mu, real_sigma = get_activation_statistics(
             data,
