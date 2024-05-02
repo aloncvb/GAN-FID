@@ -14,10 +14,8 @@ import torch.utils.data
 import torch, torchvision
 from torch.utils.data import DataLoader
 from torch.optim import Adam
-from diff_fid import inception_model, get_activation_statistics, frechet_distance
 from torch.nn import Parameter as P
 from torch.utils.checkpoint import checkpoint
-
 
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
@@ -84,7 +82,7 @@ def load_inception_net():
 
 print("Loading inception... ", end="", flush=True)
 t0 = time.time()
-# inception_model = load_inception_net().cuda().eval().half()
+inception_model = load_inception_net().cuda().eval().half()
 print("DONE! %.4fs" % (time.time() - t0))
 
 mu1 = np.load("I128_inception_moments.npz")["mu"]
@@ -163,33 +161,38 @@ def toggle_grad(model, on_or_off):
 
 
 def train(generator: Generator, trainloader: DataLoader, optim: Adam):
-    generator.train()
+
     total_loss_g = 0
     batch_idx = 0
+    generator.train()
     for batch, _ in trainloader:
         data = batch.to(device)
         optim.zero_grad()
         batch_size = data.size()[0]
 
-        real_mu, real_sigma = get_activation_statistics(
-            data,
-            device=device,
-        )
-        fake_images_fid = generator(
-            torch.randn(batch_size, 100, 1, 1, device=device)
-        )  # 1000 for stable score
-        # use fid for better training
-        fake_mu, fake_sigma = get_activation_statistics(
-            fake_images_fid,
-            device=device,
-        )
-        fid_loss = frechet_distance(real_mu, real_sigma, fake_mu, fake_sigma)
-        loss_g = -fid_loss
-        loss_g.backward()
+        # real_mu, real_sigma = calculate_activation_statistics(
+        #     data,
+        #     batch_size,
+        # )
+        with torch.cuda.amp.autocast():
 
-        total_loss_g += loss_g.item()
-        optim.step()
-        batch_idx += 1
+            fake_images_fid = generator(
+                torch.randn(batch_size, 100, 1, 1, device=device)
+            )  # 1000 for stable score
+            # use fid for better training
+            # fake_mu, fake_sigma = calculate_activation_statistics(
+            #     fake_images_fid,
+            #     batch_size,
+            # )
+            fid = fastprefid(fake_images_fid, mu_gpu, sigma_gpu, batch_size)
+            fid_ = fid / fid.detach().data.clone()
+            fid_.backward()
+
+            total_loss_g += fid_.item()
+            optim.step()
+
+            torch.cuda.empty_cache()
+            batch_idx += 1
     return total_loss_g / batch_idx
 
 
@@ -213,23 +216,15 @@ def test(
             data = batch.to(device)
             batch_size = data.size()[0]
 
-            real_mu, real_sigma = get_activation_statistics(
-                data,
-                device=device,
-            )
             fake_images_fid = generator(
                 torch.randn(batch_size, 100, 1, 1, device=device)
             )  # 1000 for stable score
             # use fid for better training
-            fake_mu, fake_sigma = get_activation_statistics(
-                fake_images_fid,
-                device=device,
-            )
-            fid_loss = frechet_distance(real_mu, real_sigma, fake_mu, fake_sigma)
-            # * loss_g # loss_g is there to scale loss in the range of generator loss
-            loss_g = -fid_loss
+            fid = fastprefid(fake_images_fid, mu_gpu, sigma_gpu, batch_size)
 
-            total_loss_g += loss_g.item()
+            fid_ = fid / fid.detach().data.clone()
+
+            total_loss_g += fid_.item()
             batch_idx += 1
         print(
             "Epoch: {} Test set: Average loss_g: {:.4f}".format(
@@ -301,11 +296,12 @@ def main(args):
         "%s_" % args.dataset + "batch%d_" % args.batch_size + "mid%d_" % args.latent_dim
     )
 
-    generator = Generator(100).to(device)
+    generator = Generator(args.latent_dim).to(device)
     generator.load_state_dict(
         torch.load("models/generator.pt", map_location=device), strict=False
     )
-    optim = Adam(generator.parameters(), lr=0.001, betas=(0.5, 0.999))
+    optim = Adam(generator.parameters(), lr=0.0002 * 16, betas=(0.5, 0.999))
+    generator = generator.half()
 
     loss_train_arr_g = []
     loss_test_arr_g = []
