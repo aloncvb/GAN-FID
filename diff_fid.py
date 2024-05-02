@@ -56,7 +56,7 @@ class WrapInception(nn.Module):
         x = checkpoint(part2, x)
         # END CHANGE.
 
-        pool = torch.mean(x.view(x.size(0), x.size(1), -1), 2).to(dtype=torch.float32)
+        pool = torch.mean(x.view(x.size(0), x.size(1), -1), 2)
         logits = self.net.fc(F.dropout(pool, training=False).view(pool.size(0), -1))
         return pool, logits
 
@@ -64,7 +64,7 @@ class WrapInception(nn.Module):
 def inception_feature_extractor() -> nn.Module:
     model = inception_v3(pretrained=True, init_weights=False)
     model = WrapInception(model)
-    return model
+    return model.eval().half()
 
 
 inception_model = inception_feature_extractor()
