@@ -179,10 +179,10 @@ def main(args):
         )
 
         trainset = torchvision.datasets.CIFAR10(
-            root="./data/Cifar10",  # specify the root directory where the data will be saved
-            train=True,  # specify the dataset split ('train', 'valid', 'test')
-            download=True,  # download the data if not already available
-            transform=transform,  # apply the defined transformations
+            root="./data/Cifar10",
+            train=True,
+            download=True,
+            transform=transform,
         )
         trainloader = torch.utils.data.DataLoader(
             trainset, batch_size=args.batch_size, shuffle=True, num_workers=2
@@ -193,6 +193,33 @@ def main(args):
         testloader = torch.utils.data.DataLoader(
             testset, batch_size=args.batch_size, shuffle=False, num_workers=2
         )
+    elif args.dataset == "celeba":
+        transform = transforms.Compose(
+            [
+                transforms.ToTensor(),
+                transforms.Normalize(mean=(0.5, 0.5, 0.5), std=(0.5, 0.5, 0.5)),
+            ]
+        )
+
+        trainset = torchvision.datasets.CelebA(
+            root="./data/CelebA",  # specify the root directory where the data will be saved
+            split="train",  # specify the dataset split ('train', 'valid', 'test')
+            download=True,  # download the data if not already available
+            transform=transform,  # apply the defined transformations
+        )
+        trainloader = torch.utils.data.DataLoader(
+            trainset, batch_size=args.batch_size, shuffle=True, num_workers=2
+        )
+        testset = torchvision.datasets.CelebA(
+            root="./data/CelebA",
+            download=True,
+            transform=transform,
+            split="test",
+        )
+        testloader = torch.utils.data.DataLoader(
+            testset, batch_size=args.batch_size, shuffle=False, num_workers=2
+        )
+
     else:
         raise ValueError("Dataset not implemented")
 
