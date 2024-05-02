@@ -102,7 +102,7 @@ def trace_of_matrix_sqrt(C1, C2):
     print(C1.shape, C2.shape)
     eps = 1e-5
     d, bs = C1.shape
-    M = C1.t() @ C2 @ C1
+    M = (C1.t() @ C2 @ C1).float()
     I = torch.eye(M.size(0), device=M.device, dtype=M.dtype)
     M_reg = M + eps * I
     if torch.any(torch.isnan(M_reg)) or torch.any(torch.isinf(M)):
