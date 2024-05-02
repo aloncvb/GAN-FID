@@ -184,8 +184,7 @@ def train(generator: Generator, trainloader: DataLoader, optim: Adam):
             device=device,
         )
         fid_loss = frechet_distance(real_mu, real_sigma, fake_mu, fake_sigma)
-        # * loss_g # loss_g is there to scale loss in the range of generator loss
-        loss_g = -fid_loss
+        loss_g = fid_loss
         loss_g.backward()
 
         total_loss_g += loss_g.item()
@@ -306,7 +305,7 @@ def main(args):
     generator.load_state_dict(
         torch.load("models/generator.pt", map_location=device), strict=False
     )
-    optim = Adam(generator.parameters(), lr=0.0001)
+    optim = Adam(generator.parameters(), lr=1e-4)
 
     loss_train_arr_g = []
     loss_test_arr_g = []
