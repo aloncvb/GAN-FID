@@ -6,6 +6,7 @@ import numpy as np
 import torch.nn as nn
 import argparse
 from torchvision import transforms
+import torch.nn.functional as F
 
 import matplotlib.pyplot as plt
 import torch.utils
@@ -14,14 +15,71 @@ import torch, torchvision
 from torch.utils.data import DataLoader
 from torch.optim import Adam
 from diff_fid import inception_model, get_activation_statistics, frechet_distance
+from torch.nn import Parameter as P
+from torch.utils.checkpoint import checkpoint
 
 
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
 
+class WrapInception(nn.Module):
+    def __init__(self, net):
+        super(WrapInception, self).__init__()
+        self.net = net
+        self.mean = P(
+            torch.tensor([0.485, 0.456, 0.406]).view(1, -1, 1, 1), requires_grad=False
+        )
+        self.std = P(
+            torch.tensor([0.229, 0.224, 0.225]).view(1, -1, 1, 1), requires_grad=False
+        )
+
+    def forward(self, x):
+        def part1(x):
+            with torch.cuda.amp.autocast():
+                x = (x + 1.0) / 2.0
+                x = (x - self.mean) / self.std
+                if x.shape[2] != 299 or x.shape[3] != 299:
+                    x = F.interpolate(
+                        x, size=(299, 299), mode="bilinear", align_corners=True
+                    )
+                x = self.net.Conv2d_1a_3x3(x)
+                x = self.net.Conv2d_2a_3x3(x)
+                x = self.net.Conv2d_2b_3x3(x)
+                x = F.max_pool2d(x, kernel_size=3, stride=2)
+                x = self.net.Conv2d_3b_1x1(x)
+                x = self.net.Conv2d_4a_3x3(x)
+                x = F.max_pool2d(x, kernel_size=3, stride=2)
+                x = self.net.Mixed_5b(x)
+                x = self.net.Mixed_5c(x)
+                return x
+
+        def part2(x):
+            with torch.cuda.amp.autocast():
+                x = self.net.Mixed_5d(x)
+                x = self.net.Mixed_6a(x)
+                x = self.net.Mixed_6b(x)
+                x = self.net.Mixed_6c(x)
+                x = self.net.Mixed_6d(x)
+                x = self.net.Mixed_6e(x)
+                x = self.net.Mixed_7a(x)
+                x = self.net.Mixed_7b(x)
+                x = self.net.Mixed_7c(x)
+                return x
+
+        # ONLY CHANGE HERE.
+        x = checkpoint(part1, x)
+        x = checkpoint(part2, x)
+        # END CHANGE.
+
+        pool = torch.mean(x.view(x.size(0), x.size(1), -1), 2)
+        logits = self.net.fc(F.dropout(pool, training=False).view(pool.size(0), -1))
+        return pool, logits
+
+
 def load_inception_net():
-    inception_model = inception_v3(pretrained=True, transform_input=False)
-    return inception_model
+    model = inception_v3(pretrained=True, transform_input=False)
+    model = WrapInception(model)
+    return model
 
 
 print("Loading inception... ", end="", flush=True)
