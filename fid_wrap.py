@@ -99,6 +99,7 @@ def compute_trace(S):
 
 
 def trace_of_matrix_sqrt(C1, C2):
+    print(C1.shape, C2.shape)
     eps = 1e-5
     d, bs = C1.shape
     M = C1.t() @ C2 @ C1
