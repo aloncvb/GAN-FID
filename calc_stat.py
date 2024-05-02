@@ -49,16 +49,19 @@ def calc_images_stats():
             ]
         ),
     )
-
-    mu, sigma = calculate_activation_statistics(
-        dataset, 1024, inception=inception_model
-    )
-    mu = mu.cpu().numpy()  # Move to CPU and convert to NumPy array
-    sigma = sigma.cpu().numpy()  # Move to CPU and convert to NumPy array
-
+    mus = []
+    sigmas = []
+    dataloader = torch.utils.data.DataLoader(dataset, batch_size=1024, shuffle=True)
+    for batch, _ in dataloader:
+        mu, sigma = calculate_activation_statistics(
+            batch, batch.size()[0], inception=inception_model
+        )
+        mu = mu.cpu().numpy()  # Move to CPU and convert to NumPy array
+        sigma = sigma.cpu().numpy()  # Move to CPU and convert to NumPy array
+        mus.append(mu)
+        sigmas.append(sigma)
     # Save 'mu' and 'sigma' to a .npz file
-    np.savez("cifar_inception.npz", mu=mu, sigma=sigma)
-    print(mu.shape, sigma.shape)
+    np.savez("cifar_inception.npz", mu=mus, sigma=sigmas)
 
 
 # Specify the directory to save the images
