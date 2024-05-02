@@ -155,6 +155,9 @@ cython_debug/
 # mnist and fashion mnist data
 data/*
 
+trainFID.py
+utils.py
+
 mnist_images/*
 generated_mnist_images/*
 samples/*
