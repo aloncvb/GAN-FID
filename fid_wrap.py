@@ -176,29 +176,18 @@ def train(generator: Generator, trainloader: DataLoader, optim: Adam):
         optim.zero_grad()
         batch_size = data.size()[0]
 
-        # real_mu, real_sigma = calculate_activation_statistics(
-        #     data,
-        #     batch_size,
-        # )
-        with torch.cuda.amp.autocast():
+        fake_images_fid = generator(
+            torch.randn(batch_size, 100, 1, 1, device=device)
+        )  # 1000 for stable score
+        fid = fastprefid(fake_images_fid, mu_gpu, sigma_gpu, batch_size)
+        fid_ = fid / fid.detach().data.clone()
+        fid_.backward()
 
-            fake_images_fid = generator(
-                torch.randn(batch_size, 100, 1, 1, device=device)
-            )  # 1000 for stable score
-            # use fid for better training
-            # fake_mu, fake_sigma = calculate_activation_statistics(
-            #     fake_images_fid,
-            #     batch_size,
-            # )
-            fid = fastprefid(fake_images_fid, mu_gpu, sigma_gpu, batch_size)
-            fid_ = fid / fid.detach().data.clone()
-            fid_.backward()
+        total_loss_g += fid_.item()
+        optim.step()
 
-            total_loss_g += fid_.item()
-            optim.step()
-
-            torch.cuda.empty_cache()
-            batch_idx += 1
+        torch.cuda.empty_cache()
+        batch_idx += 1
     return total_loss_g / batch_idx
 
 
