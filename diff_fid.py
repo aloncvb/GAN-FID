@@ -1,5 +1,5 @@
 import torch
-from torchvision.models import inception_v3
+from torchvision.models import inception_v3, Inception_V3_Weights
 import torch.nn.functional as F
 import torch.nn as nn
 from torch.nn import Parameter as P
@@ -62,9 +62,9 @@ class WrapInception(nn.Module):
 
 
 def inception_feature_extractor() -> nn.Module:
-    model = inception_v3(pretrained=True, init_weights=False)
+    model = inception_v3(weights=Inception_V3_Weights.IMAGENET1K_V1)
     model = WrapInception(model)
-    return model.eval().half()
+    return model.eval()  # .half()
 
 
 inception_model = inception_feature_extractor()

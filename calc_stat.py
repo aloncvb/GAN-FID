@@ -22,7 +22,7 @@ def calculate_activation_statistics(images1, batch_size, inception=None):
     ), "Please choose batch_size to divide number of images."
     n_batches = int(num_images / batch_size)
     act1 = torch.zeros((num_images, 2048)).cuda()
-    images1 = images1.half()
+    images1 = images1
     for batch_idx in range(n_batches):
         start_idx = batch_size * batch_idx
         end_idx = batch_size * (batch_idx + 1)
