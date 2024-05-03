@@ -230,7 +230,7 @@ def main(args):
 
     dcgan = DCGAN(latent_dim=args.latent_dim, device=device)
     optimizer_d = torch.optim.Adam(
-        dcgan.discriminator.parameters(), lr=args.lr, betas=(0.5, 0.999)
+        dcgan.discriminator.parameters(), lr=args.lr * 2, betas=(0.5, 0.999)
     )
     optimizer_g = torch.optim.Adam(
         dcgan.generator.parameters(), lr=args.lr, betas=(0.5, 0.999)
