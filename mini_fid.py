@@ -41,10 +41,9 @@ def train(
             device=device,
         )
         fid_loss = frechet_distance(real_mu, real_sigma, fake_mu, fake_sigma)
-        loss_g = -fid_loss
-        loss_g.backward()
+        fid_loss.backward()
 
-        total_loss_g += loss_g.item()
+        total_loss_g += fid_loss.item()
         optim.step()
         batch_idx += 1
     return total_loss_g / batch_idx
@@ -84,7 +83,7 @@ def test(
             )
             fid_loss = frechet_distance(real_mu, real_sigma, fake_mu, fake_sigma)
             # * loss_g # loss_g is there to scale loss in the range of generator loss
-            loss_g = -fid_loss
+            loss_g = fid_loss
 
             total_loss_g += loss_g.item()
             batch_idx += 1
