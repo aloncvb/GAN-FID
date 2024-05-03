@@ -136,7 +136,7 @@ if __name__ == "__main__":
     # fid score
     print("Calculating FID Score")
     fid_value = calculate_fid_given_paths(
-        paths, batch_size=128, device=device, dims=2048
+        paths, batch_size=256, device=device, dims=2048
     )
 
     print(f"FID Score: {fid_value}")
