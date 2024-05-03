@@ -4,7 +4,6 @@ import torch.nn.functional as F
 import torch.nn as nn
 from torch.nn import Parameter as P
 from torch.utils.checkpoint import checkpoint
-import numpy as np
 
 
 class WrapInception(nn.Module):
@@ -62,7 +61,7 @@ class WrapInception(nn.Module):
 
 
 def inception_feature_extractor(half=True) -> nn.Module:
-    model = inception_v3(weights=Inception_V3_Weights.IMAGENET1K_V1)
+    model = inception_v3()
     model = WrapInception(model)
     if half:
         return model.eval().half()
