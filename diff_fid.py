@@ -64,7 +64,7 @@ class WrapInception(nn.Module):
 def inception_feature_extractor() -> nn.Module:
     model = inception_v3(weights=Inception_V3_Weights.IMAGENET1K_V1)
     model = WrapInception(model)
-    return model.eval()  # .half()
+    return model.eval().half()
 
 
 inception_model = inception_feature_extractor()
