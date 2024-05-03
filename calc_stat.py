@@ -12,7 +12,7 @@ from diff_fid import inception_feature_extractor
 
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
-inception_model = inception_feature_extractor()
+inception_model = inception_feature_extractor(False)
 
 
 def calculate_activation_statistics(images1, batch_size, inception=None):
