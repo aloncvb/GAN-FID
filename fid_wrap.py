@@ -65,8 +65,8 @@ class WrapInception(nn.Module):
                 return x
 
         # ONLY CHANGE HERE.
-        x = checkpoint(part1, x)
-        x = checkpoint(part2, x)
+        x = checkpoint(part1, x, use_reentrant=False)
+        x = checkpoint(part2, x, use_reentrant=False)
         # END CHANGE.
 
         pool = torch.mean(x.view(x.size(0), x.size(1), -1), 2)
