@@ -23,12 +23,10 @@ def train(
     generator.train()
     total_loss_g = 0
     batch_idx = 0
-    noise = torch.randn(trainloader.batch_size, 100, 1, 1, device=device)
     for batch, _ in trainloader:
         data = batch.to(device)
+        noise = torch.randn(data.size()[0], 100, 1, 1, device=device)
         optim.zero_grad()
-        if trainloader.batch_size != data.size()[0]:
-            noise = noise[: data.size()[0]]
 
         real_mu, real_sigma = get_activation_statistics(
             data,
