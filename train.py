@@ -62,9 +62,9 @@ def train(
                 # random number between 1 to 10
                 rand_num = randrange(10)
                 real_mu, real_sigma = get_activation_statistics(
-                    data[(rand_num - 1) * 1000 : rand_num * 1000], device=dcgan.device
+                    data[(rand_num - 1) * 2000 : rand_num * 2000], device=dcgan.device
                 )
-                fake_images_fid = dcgan.generate_fake(1000)  # 1000 for stable score
+                fake_images_fid = dcgan.generate_fake(2000)  # 1000 for stable score
                 fake_mu, fake_sigma = get_activation_statistics(
                     fake_images_fid, device=dcgan.device
                 )
