@@ -29,6 +29,7 @@ def policy_update(optim_g, reward):
 def train(
     dcgan: DCGAN,
     trainloader: DataLoader,
+    trainloader1000: DataLoader,
     optimizer_d: Adam,
     optimizer_g: Adam,
     learning_way: str = "reg",
@@ -39,6 +40,11 @@ def train(
     total_loss_g = 0
     batch_idx = 0
     best_fid = float("inf")
+    real_data = []
+    for batch, _ in trainloader1000:
+        real_data.append(batch.to(dcgan.device))
+        if len(real_data) == 10:
+            break
     for batch, _ in trainloader:
         data = batch.to(dcgan.device)
         optimizer_d.zero_grad()
@@ -62,7 +68,7 @@ def train(
                 # random number between 1 to 10
                 rand_num = randrange(1, 10)
                 real_mu, real_sigma = get_activation_statistics(
-                    data[(rand_num - 1) * 2000 : rand_num * 2000], device=dcgan.device
+                    real_data[rand_num], device=dcgan.device
                 )
                 fake_images_fid = dcgan.generate_fake(2000)  # 1000 for stable score
                 fake_mu, fake_sigma = get_activation_statistics(
@@ -217,6 +223,9 @@ def main(args):
         trainloader = torch.utils.data.DataLoader(
             trainset, batch_size=args.batch_size, shuffle=True, num_workers=2
         )
+        trainloader1000 = torch.utils.data.DataLoader(
+            trainset, batch_size=2000, shuffle=True, num_workers=2
+        )
         testset = torchvision.datasets.CIFAR10(
             root="./data/Cifar10", download=True, transform=transform, train=False
         )
@@ -273,6 +282,7 @@ def main(args):
         loss_train_d, loss_train_g = train(
             dcgan,
             trainloader,
+            trainloader1000,
             optimizer_d=optimizer_d,
             optimizer_g=optimizer_g,
             learning_way=args.lw,
