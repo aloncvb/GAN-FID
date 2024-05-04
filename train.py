@@ -99,7 +99,14 @@ def train(
     return total_loss_d / batch_idx, total_loss_g / batch_idx
 
 
-def test(dcgan: DCGAN, testloader: DataLoader, filename: str, epoch: int, fixed_noise):
+def test(
+    dcgan: DCGAN,
+    testloader: DataLoader,
+    filename: str,
+    epoch: int,
+    fixed_noise,
+    learning_way: str = "reg",
+):
     dcgan.eval()  # set to inference mode
     with torch.no_grad():
         samples = dcgan.generate_fake(100, fixed_noise[:100])
@@ -125,6 +132,24 @@ def test(dcgan: DCGAN, testloader: DataLoader, filename: str, epoch: int, fixed_
             )
             results = dcgan.label(fake_images)
             loss_g = dcgan.calculate_generator_loss(results)
+            if batch_idx % 1 == 0:
+                if learning_way == "fid":
+                    real_mu, real_sigma = get_activation_statistics(
+                        data,
+                        device=dcgan.device,
+                    )
+                    fake_images_fid = dcgan.generate_fake(
+                        batch_size
+                    )  # 1000 for stable score
+                    # use fid for better training
+                    fake_mu, fake_sigma = get_activation_statistics(
+                        fake_images_fid,
+                        device=dcgan.device,
+                    )
+                    fid_loss = frechet_distance(
+                        real_mu, real_sigma, fake_mu, fake_sigma
+                    )
+                    loss_g = 0.7 * loss_g + 0.3 * fid_loss
 
             total_loss_g += loss_g.item()
             batch_idx += 1
