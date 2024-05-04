@@ -84,6 +84,8 @@ def train(
                     optimizer_g = torch.optim.Adam(
                         dcgan.generator.parameters(), lr=0.0002, betas=(0.5, 0.999)
                     )
+                else:
+                    loss_g.backward()
             elif learning_way == "fid":
                 real_mu, real_sigma = get_activation_statistics(
                     data,
