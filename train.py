@@ -277,7 +277,9 @@ def main(args):
         )
         loss_train_arr_d.append(loss_train_d)
         loss_train_arr_g.append(loss_train_g)
-        loss_test_d, loss_test_g = test(dcgan, testloader, filename, epoch, fixed_noise)
+        loss_test_d, loss_test_g = test(
+            dcgan, testloader, filename, epoch, fixed_noise, args.lw
+        )
         loss_test_arr_d.append(loss_test_d)
         loss_test_arr_g.append(loss_test_g)
     # Save the model
