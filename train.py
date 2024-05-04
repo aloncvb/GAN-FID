@@ -99,7 +99,9 @@ def train(
                 fid_loss = frechet_distance(real_mu, real_sigma, fake_mu, fake_sigma)
                 # * loss_g # loss_g is there to scale loss in the range of generator loss
                 loss_g = 0.7 * loss_g + 0.3 * fid_loss
-        loss_g.backward()
+
+        if learning_way != "lr":
+            loss_g.backward()
 
         total_loss_g += loss_g.item()
         optimizer_g.step()
