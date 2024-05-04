@@ -48,14 +48,11 @@ def train(
 
 
 def test(
-    generator: Generator,
-    testloader: DataLoader,
-    filename: str,
-    epoch: int,
+    generator: Generator, testloader: DataLoader, filename: str, epoch: int, fixed_noise
 ):
     generator.eval()  # set to inference mode
     with torch.no_grad():
-        samples = generator(torch.randn(100, 100, 1, 1, device=device))
+        samples = generator(fixed_noise[:100])
         torchvision.utils.save_image(
             torchvision.utils.make_grid(samples),
             "./samples/" + filename + "epoch%d.png" % epoch,
@@ -63,7 +60,7 @@ def test(
 
         total_loss_g = 0
         batch_idx = 0
-        for batch, _ in testloader:
+        for index, (batch, _) in enumerate(testloader):
             data = batch.to(device)
             batch_size = data.size()[0]
 
@@ -72,7 +69,7 @@ def test(
                 device=device,
             )
             fake_images_fid = generator(
-                torch.randn(batch_size, 100, 1, 1, device=device)
+                fixed_noise[index * batch_size : (index + 1) * batch_size]
             )  # 1000 for stable score
             # use fid for better training
             fake_mu, fake_sigma = get_activation_statistics(
@@ -163,12 +160,13 @@ def main(args):
 
     loss_train_arr_g = []
     loss_test_arr_g = []
+    fixed_noise = torch.randn(testset.__len__(), 100, 1, 1, device=device)
     for epoch in range(1, args.epochs + 1):
         loss_train_g = train(generator, trainloader, optim)
         loss_train_arr_g.append(loss_train_g)
         # print train loss:
         print("Epoch: {} Train set: Average loss_g: {:.4f}".format(epoch, loss_train_g))
-        loss_test_g = test(generator, testloader, filename, epoch)
+        loss_test_g = test(generator, testloader, filename, epoch, fixed_noise)
         loss_test_arr_g.append(loss_test_g)
     # Save the model
     torch.save(generator.state_dict(), "generator.pt")
