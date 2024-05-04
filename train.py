@@ -99,10 +99,10 @@ def train(
     return total_loss_d / batch_idx, total_loss_g / batch_idx
 
 
-def test(dcgan: DCGAN, testloader: DataLoader, filename: str, epoch: int):
+def test(dcgan: DCGAN, testloader: DataLoader, filename: str, epoch: int, fixed_noise):
     dcgan.eval()  # set to inference mode
     with torch.no_grad():
-        samples = dcgan.generate_fake(100)
+        samples = dcgan.generate_fake(100, fixed_noise[:100])
         torchvision.utils.save_image(
             torchvision.utils.make_grid(samples),
             "./samples/" + filename + "epoch%d.png" % epoch,
@@ -111,14 +111,18 @@ def test(dcgan: DCGAN, testloader: DataLoader, filename: str, epoch: int):
         total_loss_g = 0
         total_loss_d = 0
         batch_idx = 0
-        for batch, _ in testloader:
+        for index, (batch, _) in enumerate(testloader):
             data = batch.to(dcgan.device)
             batch_size = data.size()[0]
             real_label = dcgan.label_real(data)
             fake_label = dcgan.label_fake(batch_size=batch_size)
             loss_d = dcgan.calculate_dicriminator_loss(real_label, fake_label)
             total_loss_d += loss_d.item()
-            fake_images = dcgan.generate_fake(batch_size)
+
+            fake_images = dcgan.generate_fake(
+                batch_size,
+                noise=fixed_noise[index * batch_size : (index + 1) * batch_size],
+            )
             results = dcgan.label(fake_images)
             loss_g = dcgan.calculate_generator_loss(results)
 
@@ -237,6 +241,7 @@ def main(args):
     loss_test_arr_d = []
     loss_train_arr_g = []
     loss_test_arr_g = []
+    fixed_noise = torch.randn(testset.__len__(), args.latent_dim, 1, 1, device=device)
     for epoch in range(1, args.epochs + 1):
         loss_train_d, loss_train_g = train(
             dcgan,
@@ -247,7 +252,7 @@ def main(args):
         )
         loss_train_arr_d.append(loss_train_d)
         loss_train_arr_g.append(loss_train_g)
-        loss_test_d, loss_test_g = test(dcgan, testloader, filename, epoch)
+        loss_test_d, loss_test_g = test(dcgan, testloader, filename, epoch, fixed_noise)
         loss_test_arr_d.append(loss_test_d)
         loss_test_arr_g.append(loss_test_g)
     # Save the model
