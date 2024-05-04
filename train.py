@@ -60,7 +60,7 @@ def train(
         if batch_idx % 10 == 0:
             if learning_way == "lr":
                 # random number between 1 to 10
-                rand_num = randrange(10)
+                rand_num = randrange(1, 10)
                 real_mu, real_sigma = get_activation_statistics(
                     data[(rand_num - 1) * 2000 : rand_num * 2000], device=dcgan.device
                 )
