@@ -70,7 +70,7 @@ def train(
                 real_mu, real_sigma = get_activation_statistics(
                     real_data[rand_num], device=dcgan.device
                 )
-                fake_images_fid = dcgan.generate_fake(2000)  # 1000 for stable score
+                fake_images_fid = dcgan.generate_fake(1000)  # 1000 for stable score
                 fake_mu, fake_sigma = get_activation_statistics(
                     fake_images_fid, device=dcgan.device
                 )
@@ -224,7 +224,7 @@ def main(args):
             trainset, batch_size=args.batch_size, shuffle=True, num_workers=2
         )
         trainloader1000 = torch.utils.data.DataLoader(
-            trainset, batch_size=2000, shuffle=True, num_workers=2
+            trainset, batch_size=1000, shuffle=True, num_workers=2
         )
         testset = torchvision.datasets.CIFAR10(
             root="./data/Cifar10", download=True, transform=transform, train=False
