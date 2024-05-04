@@ -105,7 +105,9 @@ class DCGAN:
     def generate_latent(self, batch_size):
         return torch.randn(batch_size, self.latent_dim, 1, 1, device=self.device)
 
-    def generate_fake(self, batch_size):
+    def generate_fake(self, batch_size, noise=None):
+        if noise is not None:
+            return self.generator(noise).to(self.device)
         return self.generator(self.generate_latent(batch_size))
 
     def label_real(self, images):
