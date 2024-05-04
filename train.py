@@ -11,6 +11,7 @@ from torch.utils.data import DataLoader
 from torch.optim import Adam
 from dcgan import DCGAN
 from diff_fid import get_activation_statistics, frechet_distance
+from random import randrange
 
 
 def get_reward(d_loss, old_fid, new_fid):
@@ -37,7 +38,7 @@ def train(
     total_loss_d = 0
     total_loss_g = 0
     batch_idx = 0
-    old_fid = float("inf")
+    best_fid = float("inf")
     for batch, _ in trainloader:
         data = batch.to(dcgan.device)
         optimizer_d.zero_grad()
@@ -56,25 +57,26 @@ def train(
         fake_images = dcgan.generate_fake(batch_size)
         results = dcgan.label(fake_images)
         loss_g = dcgan.calculate_generator_loss(results)
-        if batch_idx % 1 == 0:
+        if batch_idx % 10 == 0:
             if learning_way == "lr":
+                # random number between 1 to 10
+                rand_num = randrange(10)
                 real_mu, real_sigma = get_activation_statistics(
-                    data,
-                    device=dcgan.device,
+                    data[(rand_num - 1) * 1000 : rand_num * 1000], device=dcgan.device
                 )
-                fake_images_fid = dcgan.generate_fake(
-                    batch_size
-                )  # 1000 for stable score
-                # use fid for better training
+                fake_images_fid = dcgan.generate_fake(1000)  # 1000 for stable score
                 fake_mu, fake_sigma = get_activation_statistics(
-                    fake_images_fid,
-                    device=dcgan.device,
+                    fake_images_fid, device=dcgan.device
                 )
-
                 new_fid = frechet_distance(real_mu, real_sigma, fake_mu, fake_sigma)
-                reward = torch.tensor([get_reward(loss_d, old_fid, new_fid)])
-                policy_update(optimizer_g, reward)
-                old_fid = new_fid
+
+                if new_fid.item() < best_fid:
+                    best_fid = new_fid.item()
+                    best_generator = dcgan.generator.state_dict()
+                    dcgan.generator.load_state_dict(best_generator)
+                    optimizer_g = torch.optim.Adam(
+                        dcgan.generator.parameters(), lr=0.0002, betas=(0.5, 0.999)
+                    )
             elif learning_way == "fid":
                 real_mu, real_sigma = get_activation_statistics(
                     data,
