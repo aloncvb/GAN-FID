@@ -42,6 +42,7 @@ def train(
     batch_idx = 0
     best_fid = float("inf")
     real_data = []
+    update_flag = True
     for batch, _ in trainloader1000:
         real_data.append(batch.to(dcgan.device))
         if len(real_data) == 10:
@@ -84,8 +85,7 @@ def train(
                     optimizer_g = torch.optim.Adam(
                         dcgan.generator.parameters(), lr=0.0002, betas=(0.5, 0.999)
                     )
-                else:
-                    loss_g.backward()
+                    update_flag = False
             elif learning_way == "fid":
                 real_mu, real_sigma = get_activation_statistics(
                     data,
@@ -103,11 +103,13 @@ def train(
                 # * loss_g # loss_g is there to scale loss in the range of generator loss
                 loss_g = 0.7 * loss_g + 0.3 * fid_loss
 
-        if learning_way != "lr":
+        if update_flag:
             loss_g.backward()
+            total_loss_g += loss_g.item()
+            optimizer_g.step()
+        else:
+            update_flag = True
 
-        total_loss_g += loss_g.item()
-        optimizer_g.step()
         batch_idx += 1
     return total_loss_d / batch_idx, total_loss_g / batch_idx
 
