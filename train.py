@@ -32,6 +32,7 @@ def train(
     trainloader1000: DataLoader,
     optimizer_d: Adam,
     optimizer_g: Adam,
+    epoch: int,
     learning_way: str = "reg",
 ):
     dcgan.train()  # set to training mode
@@ -64,7 +65,7 @@ def train(
         results = dcgan.label(fake_images)
         loss_g = dcgan.calculate_generator_loss(results)
         if batch_idx % 10 == 0:
-            if learning_way == "lr":
+            if learning_way == "lr" and epoch > 9:
                 # random number between 1 to 10
                 rand_num = randrange(1, 10)
                 real_mu, real_sigma = get_activation_statistics(
@@ -287,6 +288,7 @@ def main(args):
             trainloader1000,
             optimizer_d=optimizer_d,
             optimizer_g=optimizer_g,
+            epoch=epoch,
             learning_way=args.lw,
         )
         loss_train_arr_d.append(loss_train_d)
