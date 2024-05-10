@@ -66,7 +66,7 @@ def train(
         results = dcgan.label(fake_images)
         loss_g = dcgan.calculate_generator_loss(results)
         if batch_idx % 10 == 0:
-            if learning_way == "lr" and epoch > 9:
+            if learning_way == "reverse" and epoch > 9:
                 # random number between 1 to 10
                 rand_num = randrange(1, 10)
                 real_mu, real_sigma = get_activation_statistics(
@@ -248,10 +248,10 @@ def main(args):
         )
 
         trainset = torchvision.datasets.CelebA(
-            root="./data/CelebA",  # specify the root directory where the data will be saved
-            split="train",  # specify the dataset split ('train', 'valid', 'test')
-            download=True,  # download the data if not already available
-            transform=transform,  # apply the defined transformations
+            root="./data/CelebA",
+            split="train",
+            download=True,
+            transform=transform,
         )
         trainloader = torch.utils.data.DataLoader(
             trainset, batch_size=args.batch_size, shuffle=True, num_workers=2
