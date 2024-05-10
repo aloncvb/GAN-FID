@@ -4,10 +4,8 @@ from torch.nn.functional import softmax
 from torchvision.models import inception_v3, Inception_V3_Weights
 import numpy as np
 from pytorch_fid.fid_score import calculate_fid_given_paths
-from pytorch_gan_metrics import get_inception_score
 from torch.utils.data import Dataset, DataLoader
 from scipy.stats import entropy
-from torchvision import transforms
 import os
 from PIL import Image
 
@@ -108,32 +106,7 @@ if __name__ == "__main__":
 
     paths = ["cifar_images", "generated_cifar_images"]
 
-    # Calculate FID Score
-    # transform = transforms.Compose(
-    #     [
-    #         transforms.ToTensor(),  # Convert image to tensor
-    #     ]
-    # )
-    # # Create a dataset from the image directory
-    # directory = "./generated_mnist_images"
-    # images = [
-    #     os.path.join(directory, f)
-    #     for f in os.listdir(directory)
-    #     if os.path.isfile(os.path.join(directory, f))
-    # ]
-    # # str to pil image:
-
-    # images = [transform(Image.open(img)) for img in images]
-    # dataset = ImageDataset(directory="./generated_mnist_images", transform=transform)
-
-    # # Create a DataLoader
-    # dataloader = DataLoader(dataset, batch_size=128)
-    # print("Calculating Inception Score")
-    # is_score = get_inception_score(dataloader, use_torch=True)
-
-    # print(f"Inception Score: {is_score}")
-
-    # fid score
+    # Calculate FID Score over all dataset
     print("Calculating FID Score")
     fid_value = calculate_fid_given_paths(
         paths, batch_size=256, device=device, dims=2048
