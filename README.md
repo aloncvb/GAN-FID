@@ -10,3 +10,4 @@ mnist_images.py - help to get real samples of a dataset.
 generate_mnist_images.py - generates images from the trained generator to compare after.
 calc_stat.py - script to improve times of training, we can calculate all the values for the fid calculation beforehand.
 dcgan.py - my implementation of DCGAN.
+fid_utils.py - all fastFID functions
