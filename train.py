@@ -35,7 +35,6 @@ def train(
     batch_idx = 0
     best_fid = float("inf")
     old_fid = 0
-    new_fid = 0
     real_data = []
     update_flag = True
     for batch, _ in trainloader1000:
@@ -84,21 +83,21 @@ def train(
             new_fid = frechet_distance(real_mu, real_sigma, fake_mu, fake_sigma)
             reward = get_reward_loss(old_fid, new_fid)
             old_fid = new_fid
-            loss_g = loss_g + reward
+            if old_fid != 0:
+                loss_g = loss_g + reward
 
         elif learning_way == "fid":
             real_mu, real_sigma = get_activation_statistics(
                 data,
                 device=dcgan.device,
             )
-            fake_images_fid = dcgan.generate_fake(batch_size)  # 1000 for stable score
+            fake_images_fid = dcgan.generate_fake(batch_size)
             # use fid for better training
             fake_mu, fake_sigma = get_activation_statistics(
                 fake_images_fid,
                 device=dcgan.device,
             )
             fid_loss = frechet_distance(real_mu, real_sigma, fake_mu, fake_sigma)
-            # * loss_g # loss_g is there to scale loss in the range of generator loss
             loss_g = 0.7 * loss_g + 0.3 * fid_loss
 
         if update_flag:
