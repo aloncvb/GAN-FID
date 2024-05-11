@@ -14,16 +14,9 @@ from diff_fid import get_activation_statistics, frechet_distance
 from random import randrange
 
 
-def get_reward(d_loss, old_fid, new_fid):
-    # Reward based on improving FID score and fooling the discriminator
-    fid_reward = old_fid - new_fid  # Positive if FID improved
-    adversarial_reward = -d_loss  # Higher if discriminator is more fooled
-    return fid_reward + adversarial_reward
-
-
-def policy_update(optim_g, reward):
-    loss = -reward.mean()  # Maximize reward; equivalent to minimizing negative reward
-    optim_g.zero_grad()
+def get_reward_loss(old_fid, new_fid):
+    # Reward based on improving FID score
+    return new_fid - old_fid  # negative if FID improved
 
 
 def train(
@@ -41,6 +34,8 @@ def train(
     total_loss_g = 0
     batch_idx = 0
     best_fid = float("inf")
+    old_fid = 0
+    new_fid = 0
     real_data = []
     update_flag = True
     for batch, _ in trainloader1000:
@@ -85,6 +80,12 @@ def train(
                     dcgan.generator.parameters(), lr=0.0002, betas=(0.5, 0.999)
                 )
                 update_flag = False
+        elif learning_way == "rl":
+            new_fid = frechet_distance(real_mu, real_sigma, fake_mu, fake_sigma)
+            reward = get_reward_loss(old_fid, new_fid)
+            old_fid = new_fid
+            loss_g = loss_g + reward
+
         elif learning_way == "fid":
             real_mu, real_sigma = get_activation_statistics(
                 data,
