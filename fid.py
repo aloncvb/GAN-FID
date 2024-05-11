@@ -34,8 +34,8 @@ def inception_score(imgs, batch_size=64, splits=1):
 
     def get_pred(x):
         try:
-            print("inception model(x)")
-            x = inception_model(x)
+            print("inception_model.forward(x)")
+            x = inception_model.forward(x)
             print("softmax(x, dim=1).data.numpy()")
             return softmax(x, dim=1).data.cpu().numpy()
 
