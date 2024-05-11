@@ -1,4 +1,5 @@
 # this file is used to calculate the FID score and the inception score
+import os
 import torch
 from torch.nn.functional import softmax
 from torchvision.models import inception_v3, Inception_V3_Weights
@@ -6,7 +7,6 @@ import numpy as np
 from pytorch_fid.fid_score import calculate_fid_given_paths
 from torch.utils.data import Dataset, DataLoader
 from scipy.stats import entropy
-import os
 from PIL import Image
 
 

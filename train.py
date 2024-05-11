@@ -1,17 +1,16 @@
 """Training procedure for gan.
 """
 
-import matplotlib.pyplot as plt
 import argparse
-import torch.utils
-import torch.utils.data
-import torch, torchvision
+from random import randrange
+import matplotlib.pyplot as plt
+import torch
+import torchvision
 from torchvision import transforms
 from torch.utils.data import DataLoader
 from torch.optim import Adam
 from dcgan import DCGAN
 from diff_fid import get_activation_statistics, frechet_distance
-from random import randrange
 
 
 def get_reward_loss(old_fid, new_fid):

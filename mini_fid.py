@@ -1,15 +1,13 @@
-from dcgan import Generator
-import torch
 import argparse
+import torch
+import torchvision
 from torchvision import transforms
 
 import matplotlib.pyplot as plt
-import torch.utils
-import torch.utils.data
-import torch, torchvision
 from torch.utils.data import DataLoader
 from torch.optim import Adam
 from diff_fid import get_activation_statistics, frechet_distance
+from dcgan import Generator
 
 
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
