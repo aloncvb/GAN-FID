@@ -65,43 +65,40 @@ def train(
         fake_images = dcgan.generate_fake(batch_size)
         results = dcgan.label(fake_images)
         loss_g = dcgan.calculate_generator_loss(results)
-        if batch_idx % 10 == 0:
-            if learning_way == "reverse" and epoch > 9:
-                # random number between 1 to 10
-                rand_num = randrange(1, 10)
-                real_mu, real_sigma = get_activation_statistics(
-                    real_data[rand_num], device=dcgan.device
-                )
-                fake_images_fid = dcgan.generate_fake(1000)  # 1000 for stable score
-                fake_mu, fake_sigma = get_activation_statistics(
-                    fake_images_fid, device=dcgan.device
-                )
-                new_fid = frechet_distance(real_mu, real_sigma, fake_mu, fake_sigma)
+        if learning_way == "reverse" and epoch > 9:
+            # random number between 1 to 10
+            rand_num = randrange(1, 10)
+            real_mu, real_sigma = get_activation_statistics(
+                real_data[rand_num], device=dcgan.device
+            )
+            fake_images_fid = dcgan.generate_fake(1000)  # 1000 for stable score
+            fake_mu, fake_sigma = get_activation_statistics(
+                fake_images_fid, device=dcgan.device
+            )
+            new_fid = frechet_distance(real_mu, real_sigma, fake_mu, fake_sigma)
 
-                if new_fid.item() < best_fid:
-                    best_fid = new_fid.item()
-                    best_generator = dcgan.generator.state_dict()
-                    dcgan.generator.load_state_dict(best_generator)
-                    optimizer_g = torch.optim.Adam(
-                        dcgan.generator.parameters(), lr=0.0002, betas=(0.5, 0.999)
-                    )
-                    update_flag = False
-            elif learning_way == "fid":
-                real_mu, real_sigma = get_activation_statistics(
-                    data,
-                    device=dcgan.device,
+            if new_fid.item() < best_fid:
+                best_fid = new_fid.item()
+                best_generator = dcgan.generator.state_dict()
+                dcgan.generator.load_state_dict(best_generator)
+                optimizer_g = torch.optim.Adam(
+                    dcgan.generator.parameters(), lr=0.0002, betas=(0.5, 0.999)
                 )
-                fake_images_fid = dcgan.generate_fake(
-                    batch_size
-                )  # 1000 for stable score
-                # use fid for better training
-                fake_mu, fake_sigma = get_activation_statistics(
-                    fake_images_fid,
-                    device=dcgan.device,
-                )
-                fid_loss = frechet_distance(real_mu, real_sigma, fake_mu, fake_sigma)
-                # * loss_g # loss_g is there to scale loss in the range of generator loss
-                loss_g = 0.7 * loss_g + 0.3 * fid_loss
+                update_flag = False
+        elif learning_way == "fid":
+            real_mu, real_sigma = get_activation_statistics(
+                data,
+                device=dcgan.device,
+            )
+            fake_images_fid = dcgan.generate_fake(batch_size)  # 1000 for stable score
+            # use fid for better training
+            fake_mu, fake_sigma = get_activation_statistics(
+                fake_images_fid,
+                device=dcgan.device,
+            )
+            fid_loss = frechet_distance(real_mu, real_sigma, fake_mu, fake_sigma)
+            # * loss_g # loss_g is there to scale loss in the range of generator loss
+            loss_g = 0.7 * loss_g + 0.3 * fid_loss
 
         if update_flag:
             loss_g.backward()
