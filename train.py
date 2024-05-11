@@ -10,7 +10,7 @@ from torchvision import transforms
 from torch.utils.data import DataLoader
 from torch.optim import Adam
 from dcgan import DCGAN
-from diff_fid import get_activation_statistics, frechet_distance
+from fid_utils import get_activation_statistics, frechet_distance
 
 
 def get_reward_loss(old_fid, new_fid):

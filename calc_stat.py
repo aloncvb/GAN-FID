@@ -8,7 +8,7 @@ import torch
 
 import torch
 from torchvision import transforms, datasets
-from diff_fid import inception_feature_extractor
+from fid_utils import inception_feature_extractor
 
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 

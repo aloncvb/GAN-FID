@@ -6,7 +6,7 @@ from torchvision import transforms
 import matplotlib.pyplot as plt
 from torch.utils.data import DataLoader
 from torch.optim import Adam
-from diff_fid import get_activation_statistics, frechet_distance
+from fid_utils import get_activation_statistics, frechet_distance
 from dcgan import Generator
 
 
