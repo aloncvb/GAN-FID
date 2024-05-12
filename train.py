@@ -79,6 +79,11 @@ def train(
                 )
                 update_flag = False
         elif learning_way == "rl":
+            real_mu, real_sigma = get_activation_statistics(data, device=dcgan.device)
+            fake_images_fid = dcgan.generate_fake(batch_size)
+            fake_mu, fake_sigma = get_activation_statistics(
+                fake_images_fid, device=dcgan.device
+            )
             new_fid = frechet_distance(real_mu, real_sigma, fake_mu, fake_sigma)
             reward = get_reward_loss(old_fid, new_fid)
             old_fid = new_fid
