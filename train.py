@@ -204,6 +204,10 @@ def main(args):
         trainloader = torch.utils.data.DataLoader(
             trainset, batch_size=args.batch_size, shuffle=True, num_workers=2
         )
+        trainloader1000 = torch.utils.data.DataLoader(
+            trainset, batch_size=1000, shuffle=True, num_workers=2
+        )
+
         testset = torchvision.datasets.MNIST(
             root="./data/MNIST", train=False, download=True, transform=transform
         )
