@@ -1,3 +1,8 @@
+"""
+ this file is used to calculate sigmas and mus of dataset, 
+ which is used to calculate the fastFID score
+"""
+
 import torch
 import numpy as np
 

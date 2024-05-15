@@ -68,14 +68,13 @@ def test(
             )
             fake_images_fid = generator(
                 fixed_noise[index * batch_size : (index + 1) * batch_size]
-            )  # 1000 for stable score
+            )
             # use fid for better training
             fake_mu, fake_sigma = get_activation_statistics(
                 fake_images_fid,
                 device=device,
             )
             fid_loss = frechet_distance(real_mu, real_sigma, fake_mu, fake_sigma)
-            # * loss_g # loss_g is there to scale loss in the range of generator loss
             loss_g = fid_loss
 
             total_loss_g += loss_g.item()

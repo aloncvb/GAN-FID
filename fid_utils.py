@@ -1,9 +1,9 @@
 import torch
-from torchvision.models import inception_v3, Inception_V3_Weights
 import torch.nn.functional as F
 import torch.nn as nn
 from torch.nn import Parameter as P
 from torch.utils.checkpoint import checkpoint
+from torchvision.models import inception_v3, Inception_V3_Weights
 
 
 class WrapInception(nn.Module):
@@ -18,7 +18,7 @@ class WrapInception(nn.Module):
         )
 
     def forward(self, x):
-        def part1(x):
+        def inception_wrap(x):
             with torch.cuda.amp.autocast():
                 x = (x + 1.0) / 2.0
                 x = (x - self.mean) / self.std
@@ -35,10 +35,7 @@ class WrapInception(nn.Module):
                 x = F.max_pool2d(x, kernel_size=3, stride=2)
                 x = self.net.Mixed_5b(x)
                 x = self.net.Mixed_5c(x)
-                return x
 
-        def part2(x):
-            with torch.cuda.amp.autocast():
                 x = self.net.Mixed_5d(x)
                 x = self.net.Mixed_6a(x)
                 x = self.net.Mixed_6b(x)
@@ -50,10 +47,7 @@ class WrapInception(nn.Module):
                 x = self.net.Mixed_7c(x)
                 return x
 
-        # ONLY CHANGE HERE.
-        x = checkpoint(part1, x, use_reentrant=False)
-        x = checkpoint(part2, x, use_reentrant=False)
-        # END CHANGE.
+        x = checkpoint(inception_wrap, x, use_reentrant=False)
 
         pool = torch.mean(x.view(x.size(0), x.size(1), -1), 2)
         logits = self.net.fc(F.dropout(pool, training=False).view(pool.size(0), -1))
@@ -87,24 +81,10 @@ def get_activation_statistics(images, device="cuda"):
 def trace_of_matrix_sqrt(C1, C2):
     """
     Computes using the fact that:   eig(A @ B) = eig(B @ A)
-
-    C1, C2    (d, bs)
-
-    M = C1 @ C1.T @ C2 @ C2.T
-
-    eig ( C1 @ C1.T @ C2 @ C2.T ) =
-    eig ( C1 @ (C1.T @ C2) @ C2.T ) =      O(d bs^2)
-    eig ( C1 @ ((C1.T @ C2) @ C2.T) ) =        O(d bs^2)
-    eig ( ((C1.T @ C2) @ C2.T) @ C1 ) =        O(d bs^2)
-    eig ( batch_size x batch_size  )      O(bs^3)
-
     """
     d, bs = C1.shape
-    assert bs <= d, (
-        "This algorithm takes O(bs^2d) time instead of O(d^3), so only use it when bs < d.\nGot bs=%i>d=%i. "
-        % (bs, d)
-    )  # it also computes wrong thing sice it returns bs eigenvalues and there are only d.
-    M = ((C1.t() @ C2) @ C2.t()) @ C1  # computed in O(d bs^2) time.    O(d^^3)
+    assert bs <= d, "error at trace of matrix"
+    M = ((C1.t() @ C2) @ C2.t()) @ C1
     S = torch.svd(M, compute_uv=True)[1]  # need 'uv' for backprop.
     S = torch.topk(S, bs - 1)[0]  # covariance matrix has rank bs-1
     return torch.sum(torch.sqrt(S))
@@ -119,7 +99,6 @@ def frechet_distance(mu1, sigma1, mu2, sigma2, eps=1e-6) -> torch.Tensor:
 
     diff = mu1 - mu2
 
-    # Product might be almost singular
     covmean = trace_of_matrix_sqrt(sigma1, sigma2)
     if not torch.isfinite(covmean).all():
         covmean = covmean + torch.eye(sigma1.size(0)) * eps

@@ -36,7 +36,7 @@ def save_generated_images(generator, latent_dim, num_images, folder_path):
 try:
     latent_dim = 100
     num_images = 10000
-    folder_path = "generated_mnist_images"  # Specify the path
+    folder_path = "generated_mnist_images"
 
     generator = Generator(latent_dim).to(device)
 
@@ -44,7 +44,7 @@ try:
     generator.load_state_dict(
         torch.load("models/generator.pt", map_location=device), strict=False
     )
-    generator.eval()  # Set the model to evaluation mode
+    generator.eval()
     save_generated_images(generator, latent_dim, num_images, folder_path)
 except Exception as e:
     print(f"An error occurred: {e}")
