@@ -18,29 +18,22 @@ class Generator(nn.Module):
             nn.ConvTranspose2d(latent_dim, feature_num * 8, 4, 1, 0),
             nn.BatchNorm2d(feature_num * 8),
             nn.ReLU(True),
-            # State size. (ngf*8) x 4 x 4
             nn.ConvTranspose2d(feature_num * 8, feature_num * 4, 4, 2, 1),
             nn.BatchNorm2d(feature_num * 4),
             nn.ReLU(True),
-            # State size. (ngf*4) x 8 x 8
             nn.ConvTranspose2d(feature_num * 4, feature_num * 2, 4, 2, 1),
             nn.BatchNorm2d(feature_num * 2),
             nn.ReLU(True),
-            # State size. (ngf*2) x 16 x 16
             nn.ConvTranspose2d(feature_num * 2, feature_num, 4, 2, 1),
             nn.BatchNorm2d(feature_num),
             nn.ReLU(True),
-            # State size. (ngf) x 32 x 32
             nn.ConvTranspose2d(feature_num, nc, 4, 2, 1),
             nn.Tanh(),
-            # Output size. (nc) x 299 x 299
+            # Output size. (nc) x 64 x 64
         )
 
     def forward(self, input):
         output = self.main(input)
-        # print(
-        #     "Generator output size:", output.size()
-        # )  # Should be [batch_size, 3, 299, 299] if correctly configured
         return output
 
 
@@ -89,7 +82,7 @@ class DCGAN:
         self.discriminator.apply(weights_init)
         self.device = device
         self.latent_dim = latent_dim
-        self.loss = nn.BCELoss()  # change to mse loss for bce loss
+        self.loss = nn.BCELoss()
 
     def train(self):
         self.generator.train()

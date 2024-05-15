@@ -1,12 +1,7 @@
 import torch
 import numpy as np
-from torchvision import transforms
 
-import torch.utils
 import torch.utils.data
-import torch
-
-import torch
 from torchvision import transforms, datasets
 from fid_utils import inception_feature_extractor
 
@@ -37,7 +32,6 @@ def calculate_activation_statistics(images1, batch_size, inception=None):
 
 
 def calc_images_stats():
-    # Load MNIST dataset
     dataset = datasets.CIFAR10(
         root="./data",
         download=True,
@@ -56,13 +50,12 @@ def calc_images_stats():
         mu, sigma = calculate_activation_statistics(
             batch, batch.size()[0], inception=inception_model
         )
-        mu = mu.cpu().numpy()  # Move to CPU and convert to NumPy array
-        sigma = sigma.cpu().numpy()  # Move to CPU and convert to NumPy array
+        mu = mu.cpu().numpy()
+        sigma = sigma.cpu().numpy()
         mus.append(mu)
         sigmas.append(sigma)
     # Save 'mu' and 'sigma' to a .npz file
     np.savez("cifar_inception.npz", mu=mus, sigma=sigmas)
 
 
-# Specify the directory to save the images
 calc_images_stats()
