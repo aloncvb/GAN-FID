@@ -14,7 +14,6 @@ from fid_utils import get_activation_statistics, frechet_distance
 
 
 def get_reward_loss(old_fid, new_fid):
-    # Reward based on improving FID score
     return new_fid - old_fid  # negative if FID improved
 
 
