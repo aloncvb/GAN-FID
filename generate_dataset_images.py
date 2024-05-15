@@ -1,3 +1,7 @@
+"""
+this file is used to generate dataset images to later use for the FID score calculation
+"""
+
 import os
 from torchvision.utils import save_image
 import torch

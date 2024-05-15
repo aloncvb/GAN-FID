@@ -1,6 +1,9 @@
+"""
+this file is used to save dataset images to later use for the FID score calculation
+"""
+
 import os
 from torchvision import datasets, transforms
-from PIL import Image
 
 
 def save_mnist_images(directory):
